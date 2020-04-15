@@ -134,27 +134,23 @@ namespace Microsoft.Bot.Builder
         private static IActivity CloneActivity(IActivity activity)
         {
             activity = JsonConvert.DeserializeObject<Activity>(JsonConvert.SerializeObject(activity, _jsonSettings));
-            var activityWithId = EnsureActivityHasId(activity);
-
-            return activityWithId;
+            return EnsureActivityHasId(activity);
         }
 
         private static IActivity EnsureActivityHasId(IActivity activity)
         {
-            var activityWithId = activity;
-
             if (activity == null)
             {
                 throw new ArgumentNullException("Cannot check or add Id on a null Activity.");
             }
 
-            if (activity.Id == null)
+            if (string.IsNullOrEmpty(activity.Id))
             {
                 var generatedId = $"g_{Guid.NewGuid()}";
                 activity.Id = generatedId;
             }
 
-            return activityWithId;
+            return activity;
         }
 
         private void LogActivity(Queue<IActivity> transcript, IActivity activity)

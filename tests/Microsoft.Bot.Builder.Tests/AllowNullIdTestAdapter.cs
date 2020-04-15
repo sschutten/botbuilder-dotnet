@@ -19,10 +19,10 @@ namespace Microsoft.Bot.Builder.Adapters
     /// </summary>
     public class AllowNullIdTestAdapter : TestAdapter
     {
-        private bool _sendTraceActivity;
+        private readonly bool _sendTraceActivity;
         private readonly object _conversationLock = new object();
         private readonly object _activeQueueLock = new object();
-        private Queue<TaskCompletionSource<IActivity>> _queuedRequests = new Queue<TaskCompletionSource<IActivity>>();
+        private readonly Queue<TaskCompletionSource<IActivity>> _queuedRequests = new Queue<TaskCompletionSource<IActivity>>();
         private int _nextId = 0;
 
         /// <summary>
@@ -103,73 +103,6 @@ namespace Microsoft.Bot.Builder.Adapters
             }
         }
 
-        /// <summary>
-        /// Dequeues and returns the next bot response from the <see cref="ActiveQueue"/>.
-        /// </summary>
-        /// <returns>The next activity in the queue; or null, if the queue is empty.</returns>
-        /// <remarks>A <see cref="TestFlow"/> object calls this to get the next response from the bot.</remarks>
-        public new IActivity GetNextReply()
-        {
-            lock (_activeQueueLock)
-            {
-                if (ActiveQueue.Count > 0)
-                {
-                    return ActiveQueue.Dequeue();
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get the next reply async.
-        /// </summary>
-        /// <param name="cancellationToken">cancellation Token.</param>
-        /// <returns>activity when it's available or canceled task if it is canceled.</returns>
-        public new Task<IActivity> GetNextReplyAsync(CancellationToken cancellationToken = default)
-        {
-            lock (_activeQueueLock)
-            {
-                if (!_queuedRequests.Any())
-                {
-                    var result = GetNextReply();
-                    if (result != null)
-                    {
-                        return Task.FromResult(result);
-                    }
-                }
-
-                var tcs = new TaskCompletionSource<IActivity>();
-                cancellationToken.Register(() => tcs.SetCanceled());
-                this._queuedRequests.Enqueue(tcs);
-                return tcs.Task;
-            }
-        }
-
-        /// <summary>
-        /// Creates a message activity from text and the current conversational context.
-        /// </summary>
-        /// <param name="text">The message text.</param>
-        /// <returns>An appropriate message activity.</returns>
-        /// <remarks>A <see cref="TestFlow"/> object calls this to get a message activity
-        /// appropriate to the current conversation.</remarks>
-        public new Activity MakeActivity(string text = null)
-        {
-            Activity activity = new Activity
-            {
-                Type = ActivityTypes.Message,
-                Locale = this.Locale,
-                From = Conversation.User,
-                Recipient = Conversation.Bot,
-                Conversation = Conversation.Conversation,
-                ServiceUrl = Conversation.ServiceUrl,
-                Id = (_nextId++).ToString(),
-                Text = text,
-            };
-
-            return activity;
-        }
-
         public override async Task<ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
         {
             if (turnContext == null)
@@ -227,6 +160,30 @@ namespace Microsoft.Bot.Builder.Adapters
             }
 
             return responses;
+        }
+
+        /// <summary>
+        /// Creates a message activity from text and the current conversational context.
+        /// </summary>
+        /// <param name="text">The message text.</param>
+        /// <returns>An appropriate message activity.</returns>
+        /// <remarks>A <see cref="TestFlow"/> object calls this to get a message activity
+        /// appropriate to the current conversation.</remarks>
+        private new Activity MakeActivity(string text = null)
+        {
+            Activity activity = new Activity
+            {
+                Type = ActivityTypes.Message,
+                Locale = this.Locale,
+                From = Conversation.User,
+                Recipient = Conversation.Bot,
+                Conversation = Conversation.Conversation,
+                ServiceUrl = Conversation.ServiceUrl,
+                Id = (_nextId++).ToString(),
+                Text = text,
+            };
+
+            return activity;
         }
 
         private void Enqueue(Activity activity)
