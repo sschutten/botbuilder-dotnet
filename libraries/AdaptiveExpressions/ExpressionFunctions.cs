@@ -2601,11 +2601,6 @@ namespace AdaptiveExpressions
         /// <returns>property count.</returns>
         private static int GetPropertyCount(object obj)
         {
-            if (obj == null)
-            {
-                return -1;
-            }
-
             if (obj is IDictionary dictionary)
             {
                 return dictionary.Count;
