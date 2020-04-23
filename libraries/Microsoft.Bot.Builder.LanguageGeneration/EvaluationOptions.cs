@@ -106,10 +106,10 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         public Func<string, object> NullSubstitution { get; set; } = null;
 
         /// <summary>
-        /// Gets or sets an event handler that handles the emited events in the evaluation processs.
+        /// Gets or sets an event handler that handles the emited events in the evaluation process.
         /// </summary>
         /// <value>
-        /// An event handler that handles the emited events in the evaluation processs.
+        /// An event handler that handles the emited events in the evaluation process.
         /// </value>
         public EventHandler OnEvent { get; set; } = null;
 
