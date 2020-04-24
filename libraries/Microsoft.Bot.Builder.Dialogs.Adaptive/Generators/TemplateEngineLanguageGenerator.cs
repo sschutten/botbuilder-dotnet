@@ -53,7 +53,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             this.Id = id ?? DEFAULTLABEL;
             var (_, locale) = LGResourceLoader.ParseLGFileName(id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
-            this.lg = LanguageGeneration.Templates.ParseText(lgText ?? string.Empty, Id, importResolver, registeSourceMap: SourceMapRegister);
+            this.lg = LanguageGeneration.Templates.ParseText(lgText ?? string.Empty, Id, importResolver);
+            this.lg.AddDebuggingEventRegister(SourceMapRegister);
         }
 
         /// <summary>
@@ -68,7 +69,8 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
             var (_, locale) = LGResourceLoader.ParseLGFileName(Id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
-            this.lg = LanguageGeneration.Templates.ParseFile(filePath, importResolver, registeSourceMap: SourceMapRegister);
+            this.lg = LanguageGeneration.Templates.ParseFile(filePath, importResolver);
+            this.lg.AddDebuggingEventRegister(SourceMapRegister);
         }
 
         /// <summary>

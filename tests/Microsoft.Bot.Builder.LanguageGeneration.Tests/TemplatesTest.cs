@@ -1231,7 +1231,8 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
                 }
             };
 
-            var templates = Templates.ParseFile(GetExampleFilePath("Event.lg"), registeSourceMap: registeSourceMapEventsHandler);
+            var templates = Templates.ParseFile(GetExampleFilePath("Event.lg"));
+            templates.AddDebuggingEventRegister(registeSourceMapEventsHandler);
             Assert.AreEqual(1, expressionNumber);
             Assert.AreEqual(1, templateNumber);
         }
@@ -1270,7 +1271,8 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
                 }
             };
 
-            var templates = Templates.ParseFile(GetExampleFilePath("Event.lg"), registeSourceMap: registeSourceMapEventsHandler);
+            var templates = Templates.ParseFile(GetExampleFilePath("Event.lg"));
+            templates.AddDebuggingEventRegister(registeSourceMapEventsHandler);
             var result = templates.Evaluate("template1", null, new EvaluationOptions { OnEvent = onEvent });
             Assert.AreEqual(1, expressionEvalTime);
             Assert.AreEqual(1, templateEvalTime);

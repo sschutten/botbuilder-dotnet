@@ -51,6 +51,14 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         }
 
         /// <summary>
+        /// Gets or sets register event trigger.
+        /// </summary>
+        /// <value>
+        /// Register event trigger.
+        /// </value>
+        public EventRegister EventRegister { get; set; }
+
+        /// <summary>
         /// Gets get all templates from current lg file and reference lg files.
         /// </summary>
         /// <value>
@@ -147,13 +155,11 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// <param name="filePath">Absolute path of a LG file.</param>
         /// <param name="importResolver">Resolver to resolve LG import id to template text.</param>
         /// <param name="expressionParser">ExpressionEngine Expression engine for evaluating expressions.</param>
-        /// <param name="registeSourceMap">RegisteSourceMap event handler.</param>
         /// <returns>new <see cref="LanguageGeneration.Templates"/> entity.</returns>
         public static Templates ParseFile(
             string filePath,
             ImportResolverDelegate importResolver = null,
-            ExpressionParser expressionParser = null,
-            EventHandler registeSourceMap = null) => TemplatesParser.ParseFile(filePath, importResolver, expressionParser, registeSourceMap);
+            ExpressionParser expressionParser = null) => TemplatesParser.ParseFile(filePath, importResolver, expressionParser);
 
         /// <summary>
         /// Parser to turn lg content into a <see cref="LanguageGeneration.Templates"/>.
@@ -162,14 +168,23 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// <param name="id">Id is the identifier of content. If importResolver is null, id must be a full path string. </param>
         /// <param name="importResolver">Resolver to resolve LG import id to template text.</param>
         /// <param name="expressionParser">Expression parser engine for parsing expressions.</param>
-        /// <param name="registeSourceMap">RegisteSourceMap event handler.</param>
         /// <returns>new <see cref="Templates"/> entity.</returns>
         public static Templates ParseText(
             string content,
             string id = "",
             ImportResolverDelegate importResolver = null,
-            ExpressionParser expressionParser = null,
-            EventHandler registeSourceMap = null) => TemplatesParser.ParseText(content, id, importResolver, expressionParser, registeSourceMap);
+            ExpressionParser expressionParser = null) => TemplatesParser.ParseText(content, id, importResolver, expressionParser);
+
+        /// <summary>
+        /// Register event handler.
+        /// </summary>
+        /// <param name="registerEventHandler">Event handler.</param>
+        public void AddDebuggingEventRegister(EventHandler registerEventHandler)
+        {
+            var eventRegister = new EventRegister(AllTemplates.ToList(), registerEventHandler);
+            eventRegister.Register();
+            this.EventRegister = eventRegister;
+        }
 
         /// <summary>
         /// Evaluate a template with given name and scope.
@@ -182,7 +197,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         {
             CheckErrors();
             var evalOpt = opt != null ? opt.Merge(LgOptions) : LgOptions;
-            var evaluator = new Evaluator(AllTemplates.ToList(), ExpressionParser, evalOpt);
+            var evaluator = new Evaluator(AllTemplates.ToList(), ExpressionParser, evalOpt, EventRegister);
             return evaluator.EvaluateTemplate(templateName, scope);
         }
 

@@ -31,6 +31,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         private const string ReExecuteSuffix = "!";
         private readonly Stack<EvaluationTarget> evaluationTargetStack = new Stack<EvaluationTarget>();
         private readonly EvaluationOptions lgOptions;
+        private readonly EventRegister eventRegister;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Evaluator"/> class.
@@ -38,11 +39,13 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// <param name="templates">Template list.</param>
         /// <param name="expressionParser">Expression parser.</param>
         /// <param name="opt">Options for LG. </param>
-        public Evaluator(List<Template> templates, ExpressionParser expressionParser, EvaluationOptions opt = null)
+        /// <param name="eventRegister">Event register. </param>
+        public Evaluator(List<Template> templates, ExpressionParser expressionParser, EvaluationOptions opt = null, EventRegister eventRegister = null)
         {
             Templates = templates;
             TemplateMap = templates.ToDictionary(x => x.Name);
             this.lgOptions = opt;
+            this.eventRegister = eventRegister;
 
             // generate a new customized expression parser by injecting the template as functions
             ExpressionParser = new ExpressionParser(CustomizedEvaluatorLookup(expressionParser.EvaluatorLookup));
@@ -461,12 +464,12 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             {
                 var source = TemplateMap[CurrentTarget().TemplateName].SourceRange.Source;
 
-                if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null)
+                if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null && eventRegister != null)
                 {
                     var id = exp + context.Start.Line + source;
-                    if (StaticChecker.Expressions.ContainsKey(id))
+                    if (eventRegister.ExpressionRefDict.ContainsKey(id))
                     {
-                        lgOptions.OnEvent(StaticChecker.Expressions[id], new BeginExpressionEvaluationArgs { Source = source, Expression = exp });
+                        lgOptions.OnEvent(eventRegister.ExpressionRefDict[id], new BeginExpressionEvaluationArgs { Source = source, Expression = exp });
                     }
                 }
             }
