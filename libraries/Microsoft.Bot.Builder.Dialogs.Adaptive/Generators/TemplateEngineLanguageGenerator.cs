@@ -139,7 +139,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         private void SourceMapRegister(object sender, EventArgs e)
         {
-            if (e is RegisteSourceMapArgs rs && sender != null)
+            if (e is RegisterSourceMapArgs rs && sender != null)
             {
                 var sourceRange = rs.SourceRange;
                 var debugSM = new Debugging.SourceRange(

@@ -1216,7 +1216,7 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
 
             EventHandler registeSourceMapEventsHandler = (object sender, EventArgs e) =>
             {
-                if (e is RegisteSourceMapArgs sm)
+                if (e is RegisterSourceMapArgs sm)
                 {
                     if (sender is ExpressionRef expressionRef)
                     {

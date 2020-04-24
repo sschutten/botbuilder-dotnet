@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Bot.Builder.LanguageGeneration.Events
 {
-    public class RegisteSourceMapArgs : EventArgs
+    public class RegisterSourceMapArgs : EventArgs
     {
         public string Type { get; } = EventTypes.RegisteSourceMap;
 

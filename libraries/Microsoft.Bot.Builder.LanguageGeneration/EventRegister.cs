@@ -40,7 +40,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         {
             foreach (var template in templates)
             {
-                onRegisterEvent?.Invoke(template, new RegisteSourceMapArgs { SourceRange = template.SourceRange });
+                onRegisterEvent?.Invoke(template, new RegisterSourceMapArgs { SourceRange = template.SourceRange });
                 currentTemplate = template;
 
                 if (template.TemplateBodyParseTree != null)
@@ -194,9 +194,9 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             if (Path.IsPathRooted(source) && context != null && this.onRegisterEvent != null)
             {
                 var expressionRef = new ExpressionRef(exp, context.Start.Line, source);
-                var lineOffset = this.currentTemplate != null ? this.currentTemplate.SourceRange.Range.Start.Line : 0;
+                var lineOffset = this.currentTemplate.SourceRange.Range.Start.Line;
                 var sourceRange = new SourceRange(context, source, lineOffset);
-                this.onRegisterEvent(expressionRef, new RegisteSourceMapArgs { SourceRange = sourceRange });
+                this.onRegisterEvent(expressionRef, new RegisterSourceMapArgs { SourceRange = sourceRange });
 
                 var id = exp + context.Start.Line + source;
                 if (!ExpressionRefDict.ContainsKey(id))
