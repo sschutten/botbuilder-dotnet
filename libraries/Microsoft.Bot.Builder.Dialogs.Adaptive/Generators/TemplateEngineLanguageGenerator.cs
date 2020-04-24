@@ -91,9 +91,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <returns>generated text.</returns>
         public override async Task<string> Generate(DialogContext dialogContext, string template, object data)
         {
-            EventHandler onEvent = async (s, e) => await HandlerTemplateEvaluationEvent(turnContext, s, e);
-            onEvent += async (s, e) => await HandlerExpressionEvaluationEvent(turnContext, s, e);
-            onEvent += async (s, e) => await HandlerMessageEvent(turnContext, s, e);
+            EventHandler onEvent = async (s, e) => await HandlerTemplateEvaluationEvent(dialogContext, s, e);
+            onEvent += async (s, e) => await HandlerExpressionEvaluationEvent(dialogContext, s, e);
+            onEvent += async (s, e) => await HandlerMessageEvent(dialogContext, s, e);
 
             try
             {
@@ -110,27 +110,27 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private async Task HandlerTemplateEvaluationEvent(ITurnContext turnContext, object sender, EventArgs e)
+        private async Task HandlerTemplateEvaluationEvent(DialogContext dialogContext, object sender, EventArgs e)
         {
             if (e is BeginTemplateEvaluationArgs be && Path.IsPathRooted(be.Source))
             {
-                await turnContext.GetDebugger().StepAsync(new DialogContext(new DialogSet(), turnContext, new DialogState()), sender, be.Type, new System.Threading.CancellationToken());
+                await dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
             }
         }
 
-        private async Task HandlerExpressionEvaluationEvent(ITurnContext turnContext, object sender, EventArgs e)
+        private async Task HandlerExpressionEvaluationEvent(DialogContext dialogContext, object sender, EventArgs e)
         {
             if (e is BeginExpressionEvaluationArgs expr && Path.IsPathRooted(expr.Source))
             {
-                await turnContext.GetDebugger().StepAsync(new DialogContext(new DialogSet(), turnContext, new DialogState()), sender, expr.Type, new System.Threading.CancellationToken());
+                await dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
             }
         }
 
-        private async Task HandlerMessageEvent(ITurnContext turnContext, object sender, EventArgs e)
+        private async Task HandlerMessageEvent(DialogContext dialogContext, object sender, EventArgs e)
         {
             if (e is MessageArgs message && Path.IsPathRooted(message.Source))
             {
-                if (turnContext.GetDebugger() is IDebugger dda)
+                if (dialogContext.GetDebugger() is IDebugger dda)
                 {
                     await dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
                 }
