@@ -148,18 +148,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private void RegisterTemplateSourcemap(Template template)
-        {
-            var sourceRange = template.SourceRange;
-            var debugSM = new Debugging.SourceRange(
-                    sourceRange.Source,
-                    sourceRange.Range.Start.Line,
-                    sourceRange.Range.Start.Character,
-                    sourceRange.Range.End.Line,
-                    sourceRange.Range.End.Character);
-            DebugSupport.SourceMap.Add(template, debugSM);
-        }
-
         private void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr)
         {
             var debugSM = new Debugging.SourceRange(
@@ -168,7 +156,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                     sr.Range.Start.Character,
                     sr.Range.End.Line,
                     sr.Range.End.Character);
-            DebugSupport.SourceMap.Add(item, debugSM);
+            if (!DebugSupport.SourceMap.TryGetValue(item, out var _))
+            {
+                DebugSupport.SourceMap.Add(item, debugSM);
+            }
         }
     }
 }
