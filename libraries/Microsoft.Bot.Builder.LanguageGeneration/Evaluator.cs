@@ -102,9 +102,10 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             var currentEvaluateId = templateTarget.GetId();
 
             EvaluationTarget previousEvaluateTarget = null;
-            if (evaluationTargetStack.Count != 0)
+            var currentTemplate = CurrentTemplate();
+            if (currentTemplate != null)
             {
-                previousEvaluateTarget = evaluationTargetStack.Peek();
+                previousEvaluateTarget = CurrentTarget();
 
                 if (!reExecute && previousEvaluateTarget.EvaluatedChildren.ContainsKey(currentEvaluateId))
                 {
@@ -114,11 +115,12 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             // Using a stack to track the evaluation trace
             evaluationTargetStack.Push(templateTarget);
-            var source = TemplateMap[CurrentTarget().TemplateName].SourceRange.Source;
+            currentTemplate = CurrentTemplate();
+            var source = currentTemplate.SourceRange.Source;
 
             if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
             {
-                lgOptions.OnEvent(TemplateMap[templateName], new BeginTemplateEvaluationArgs { Source = source, TemplateName = templateName });
+                lgOptions.OnEvent(TemplateMap[templateName], new BeginTemplateEvaluationArgs { Source = source, TemplateName = templateName, Context = currentTemplate.SourceRange.ParseTree });
             }
 
             var result = Visit(TemplateMap[templateName].TemplateBodyParseTree);
@@ -134,7 +136,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
             {
-                lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = $"Evaluate template [{templateName}] get result: {result}" });
+                var text = $"Evaluate template [{templateName}] get result: {result}";
+                lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = text, Context = currentTemplate.SourceRange.ParseTree });
             }
 
             evaluationTargetStack.Pop();
@@ -408,13 +411,12 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             if (lgOptions.StrictMode == true && (error != null || result == null))
             {
-                var templateName = CurrentTarget().TemplateName;
-                if (evaluationTargetStack.Count > 0)
+                var currentTemplate = CurrentTemplate();
+                if (currentTemplate != null)
                 {
+                    CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                     evaluationTargetStack.Pop();
                 }
-
-                CheckExpressionResult(exp, error, result, templateName, context, errorPrefix);
             }
             else if (error != null
                 || result == null
@@ -434,13 +436,12 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             if (error != null || (result == null && lgOptions.StrictMode == true))
             {
-                var templateName = CurrentTarget().TemplateName;
-                if (evaluationTargetStack.Count > 0)
+                var currentTemplate = CurrentTemplate();
+                if (currentTemplate != null)
                 {
+                    CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                     evaluationTargetStack.Pop();
                 }
-
-                CheckExpressionResult(exp, error, result, templateName, context, errorPrefix);
             }
             else if (result == null && lgOptions.StrictMode != false)
             {
@@ -457,20 +458,20 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
         private (object value, string error) EvalByAdaptiveExpression(string exp, object scope, ParserRuleContext context)
         {
-            if (evaluationTargetStack.Count > 0)
+            var currentTemplate = CurrentTemplate();
+            if (currentTemplate != null)
             {
-                var template = TemplateMap[CurrentTarget().TemplateName];
-                var source = template.SourceRange.Source;
+                var source = currentTemplate.SourceRange.Source;
                 if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null)
                 {
-                    var lineOffset = template.SourceRange.Range.Start.Line;
+                    var lineOffset = currentTemplate.SourceRange.Range.Start.Line;
                     var sourceRange = new SourceRange(context, source, lineOffset);
-                    var expressionRef = new ExpressionRef(exp, sourceRange);
+                    var expressionRef = new ExpressionContext(exp, sourceRange);
 
-                    var expression = template.Expressions.FirstOrDefault(u => expressionRef.Equals(u));
+                    var expression = currentTemplate.Expressions.FirstOrDefault(u => u.GetId() == expressionRef.GetId());
                     if (expression != null)
                     {
-                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp });
+                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp, Context = context });
                     }
                 }
             }
@@ -479,21 +480,25 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             var opt = new Options();
             opt.NullSubstitution = lgOptions.NullSubstitution;
             var result = parse.TryEvaluate(scope, opt);
-            if (evaluationTargetStack.Count > 0)
+
+            if (currentTemplate != null)
             {
-                var source = TemplateMap[CurrentTarget().TemplateName].SourceRange.Source;
+                var source = currentTemplate.SourceRange.Source;
 
                 if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
                 {
+                    string text;
                     if (string.IsNullOrEmpty(result.error))
                     {
-                        lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = $"Evaluate expression '{exp}' get result: {result.value}" });
+                        text = $"Evaluate expression '{exp}' get result: {result.value}";
                     }
                     else
                     {
-                        lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = $"Evaluate expression '{exp}' get error: {result.error}" });
+                        text = $"Evaluate expression '{exp}' get error: {result.error}";
                     }
-                }
+
+                    lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = text, Context = context });
+                    }
             }
 
             return result;
@@ -680,6 +685,13 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             return templateName.EndsWith(ReExecuteSuffix) ?
                 (true, templateName.Substring(0, templateName.Length - ReExecuteSuffix.Length))
                 : (false, templateName);
+        }
+
+        private Template CurrentTemplate()
+        {
+            return evaluationTargetStack.Count > 0 ?
+                    TemplateMap[CurrentTarget().TemplateName]
+                    : null;
         }
     }
 }

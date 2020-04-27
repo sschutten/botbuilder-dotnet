@@ -6,6 +6,12 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
     {
         public string Type { get; } = EventTypes.Message;
 
+        /// <summary>
+        /// Gets or sets source id of the lg file.
+        /// </summary>
+        /// <value>
+        /// source id of the lg file.
+        /// </value>
         public string Source { get; set; }
 
         /// <summary>
@@ -16,6 +22,12 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// </value>
         public object Context { get; set; }
 
+        /// <summary>
+        /// Gets or sets message content.
+        /// </summary>
+        /// <value>
+        /// Message content.
+        /// </value>
         public string Text { get; set; }
     }
 }
