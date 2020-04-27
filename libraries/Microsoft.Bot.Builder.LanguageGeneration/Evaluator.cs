@@ -471,7 +471,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                     var expression = currentTemplate.Expressions.FirstOrDefault(u => u.GetId() == expressionRef.GetId());
                     if (expression != null)
                     {
-                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp, Context = context });
+                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp, Context = currentTemplate.SourceRange.ParseTree });
                     }
                 }
             }
@@ -497,7 +497,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                         text = $"Evaluate expression '{exp}' get error: {result.error}";
                     }
 
-                    lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = text, Context = context });
+                    lgOptions.OnEvent(MessageKey, new MessageArgs { Source = source, Text = text, Context = currentTemplate.SourceRange.ParseTree });
                     }
             }
 

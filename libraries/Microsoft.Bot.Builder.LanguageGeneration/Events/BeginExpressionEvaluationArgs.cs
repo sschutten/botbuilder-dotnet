@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Bot.Builder.LanguageGeneration
 {
-    public class BeginExpressionEvaluationArgs : ExpressionEventArgs
+    public class BeginExpressionEvaluationArgs : TemplatesEventArgs
     {
         public string Type { get; } = EventTypes.BeginExpressionEvaluation;
 

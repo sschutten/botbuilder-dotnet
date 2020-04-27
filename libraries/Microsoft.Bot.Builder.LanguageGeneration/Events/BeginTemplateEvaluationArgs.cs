@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Bot.Builder.LanguageGeneration
 {
-    public class BeginTemplateEvaluationArgs : LGEventArgs
+    public class BeginTemplateEvaluationArgs : TemplatesEventArgs
     {
         public string Type { get; } = EventTypes.BeginTemplateEvaluation;
 

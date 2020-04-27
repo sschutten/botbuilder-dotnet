@@ -2,7 +2,7 @@
 
 namespace Microsoft.Bot.Builder.LanguageGeneration
 {
-    public class LGEventArgs : EventArgs
+    public class TemplatesEventArgs : EventArgs
     {
         /// <summary>
         /// Gets or sets source id of the lg file.
@@ -13,7 +13,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         public string Source { get; set; }
 
         /// <summary>
-        /// Gets or sets LGContext, may include evaluation stack.
+        /// Gets or sets parse tree context, may include evaluation stack.
         /// </summary>
         /// <value>
         /// LGContext.

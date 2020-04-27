@@ -86,7 +86,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             var id = "inline content";
             var newLG = new Templates(content: content, id: id, importResolver: lg.ImportResolver, options: lg.Options);
-
             try
             {
                 newLG = new TemplatesTransformer(newLG).Transform(AntlrParseTemplates(content, id));
