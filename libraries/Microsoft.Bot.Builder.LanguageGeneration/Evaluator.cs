@@ -31,7 +31,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         private const string ReExecuteSuffix = "!";
         private readonly Stack<EvaluationTarget> evaluationTargetStack = new Stack<EvaluationTarget>();
         private readonly EvaluationOptions lgOptions;
-        private readonly EventRegister eventRegister;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Evaluator"/> class.
@@ -39,13 +38,11 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// <param name="templates">Template list.</param>
         /// <param name="expressionParser">Expression parser.</param>
         /// <param name="opt">Options for LG. </param>
-        /// <param name="eventRegister">Event register. </param>
-        public Evaluator(List<Template> templates, ExpressionParser expressionParser, EvaluationOptions opt = null, EventRegister eventRegister = null)
+        public Evaluator(List<Template> templates, ExpressionParser expressionParser, EvaluationOptions opt = null)
         {
             Templates = templates;
             TemplateMap = templates.ToDictionary(x => x.Name);
             this.lgOptions = opt;
-            this.eventRegister = eventRegister;
 
             // generate a new customized expression parser by injecting the template as functions
             ExpressionParser = new ExpressionParser(CustomizedEvaluatorLookup(expressionParser.EvaluatorLookup));
@@ -100,11 +97,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 throw new Exception($"{TemplateErrors.LoopDetected} {string.Join(" => ", evaluationTargetStack.Reverse().Select(e => e.TemplateName))} => {templateName}");
             }
 
-            if (Path.IsPathRooted(TemplateMap[templateName].SourceRange.Source) && lgOptions.OnEvent != null)
-            {
-                lgOptions.OnEvent(TemplateMap[templateName], new BeginTemplateEvaluationArgs { Source = TemplateMap[templateName].SourceRange.Source, TemplateName = templateName });
-            }
-
             var templateTarget = new EvaluationTarget(templateName, scope);
 
             var currentEvaluateId = templateTarget.GetId();
@@ -122,6 +114,13 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             // Using a stack to track the evaluation trace
             evaluationTargetStack.Push(templateTarget);
+            var source = TemplateMap[CurrentTarget().TemplateName].SourceRange.Source;
+
+            if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
+            {
+                lgOptions.OnEvent(TemplateMap[templateName], new BeginTemplateEvaluationArgs { Source = source, TemplateName = templateName });
+            }
+
             var result = Visit(TemplateMap[templateName].TemplateBodyParseTree);
             if (previousEvaluateTarget != null)
             {
@@ -132,8 +131,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             {
                 result = NewLineRegex.Replace(str, "$1$1");
             }
-
-            var source = TemplateMap[CurrentTarget().TemplateName].SourceRange.Source;
 
             if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
             {
@@ -462,16 +459,18 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         {
             if (evaluationTargetStack.Count > 0)
             {
-                var source = TemplateMap[CurrentTarget().TemplateName].SourceRange.Source;
-
-                if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null && eventRegister != null)
+                var template = TemplateMap[CurrentTarget().TemplateName];
+                var source = template.SourceRange.Source;
+                if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null)
                 {
-                    var lineOffset = TemplateMap[CurrentTarget().TemplateName].SourceRange.Range.Start.Line;
-                    var expressionLine = lineOffset + context.Start.Line;
-                    var id = exp + expressionLine + source;
-                    if (eventRegister.ExpressionRefDict.ContainsKey(id))
+                    var lineOffset = template.SourceRange.Range.Start.Line;
+                    var sourceRange = new SourceRange(context, source, lineOffset);
+                    var expressionRef = new ExpressionRef(exp, sourceRange);
+
+                    var expression = template.Expressions.FirstOrDefault(u => expressionRef.Equals(u));
+                    if (expression != null)
                     {
-                        lgOptions.OnEvent(eventRegister.ExpressionRefDict[id], new BeginExpressionEvaluationArgs { Source = source, Expression = exp });
+                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp });
                     }
                 }
             }

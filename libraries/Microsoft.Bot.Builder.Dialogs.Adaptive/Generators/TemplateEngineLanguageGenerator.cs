@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs.Debugging;
 using Microsoft.Bot.Builder.Dialogs.Declarative.Resources;
 using Microsoft.Bot.Builder.LanguageGeneration;
-using Microsoft.Bot.Builder.LanguageGeneration.Events;
 using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
@@ -54,7 +53,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var (_, locale) = LGResourceLoader.ParseLGFileName(id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
             this.lg = LanguageGeneration.Templates.ParseText(lgText ?? string.Empty, Id, importResolver);
-            this.lg.AddDebuggingEventRegister(SourceMapRegister);
+            AddDebuggingEventRegister(lg);
         }
 
         /// <summary>
@@ -70,7 +69,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var (_, locale) = LGResourceLoader.ParseLGFileName(Id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
             this.lg = LanguageGeneration.Templates.ParseFile(filePath, importResolver);
-            this.lg.AddDebuggingEventRegister(SourceMapRegister);
+            AddDebuggingEventRegister(lg);
         }
 
         /// <summary>
@@ -137,19 +136,40 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private void SourceMapRegister(object sender, EventArgs e)
+        private void AddDebuggingEventRegister(LanguageGeneration.Templates templates)
         {
-            if (e is RegisterSourceMapArgs rs && sender != null)
+            foreach (var template in templates)
             {
-                var sourceRange = rs.SourceRange;
-                var debugSM = new Debugging.SourceRange(
+                RegisterTemplateSourcemap(template);
+                foreach (var expressionRef in template.Expressions)
+                {
+                    RegisterExpressionSourcemap(expressionRef);
+                }
+            }
+        }
+
+        private void RegisterTemplateSourcemap(Template template)
+        {
+            var sourceRange = template.SourceRange;
+            var debugSM = new Debugging.SourceRange(
                     sourceRange.Source,
                     sourceRange.Range.Start.Line,
                     sourceRange.Range.Start.Character,
                     sourceRange.Range.End.Line,
                     sourceRange.Range.End.Character);
-                DebugSupport.SourceMap.Add(sender, debugSM);
-            }
+            DebugSupport.SourceMap.Add(template, debugSM);
+        }
+
+        private void RegisterExpressionSourcemap(ExpressionRef expressionRef)
+        {
+            var sourceRange = expressionRef.SourceRange;
+            var debugSM = new Debugging.SourceRange(
+                    sourceRange.Source,
+                    sourceRange.Range.Start.Line,
+                    sourceRange.Range.Start.Character,
+                    sourceRange.Range.End.Line,
+                    sourceRange.Range.End.Character);
+            DebugSupport.SourceMap.Add(expressionRef, debugSM);
         }
     }
 }

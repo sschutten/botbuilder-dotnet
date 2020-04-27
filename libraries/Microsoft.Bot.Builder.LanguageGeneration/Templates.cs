@@ -51,14 +51,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         }
 
         /// <summary>
-        /// Gets or sets register event trigger.
-        /// </summary>
-        /// <value>
-        /// Register event trigger.
-        /// </value>
-        public EventRegister EventRegister { get; set; }
-
-        /// <summary>
         /// Gets get all templates from current lg file and reference lg files.
         /// </summary>
         /// <value>
@@ -176,17 +168,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             ExpressionParser expressionParser = null) => TemplatesParser.ParseText(content, id, importResolver, expressionParser);
 
         /// <summary>
-        /// Register event handler.
-        /// </summary>
-        /// <param name="registerEventHandler">Event handler.</param>
-        public void AddDebuggingEventRegister(EventHandler registerEventHandler)
-        {
-            var eventRegister = new EventRegister(AllTemplates.ToList(), registerEventHandler);
-            eventRegister.Register();
-            this.EventRegister = eventRegister;
-        }
-
-        /// <summary>
         /// Evaluate a template with given name and scope.
         /// </summary>
         /// <param name="templateName">Template name to be evaluated.</param>
@@ -197,7 +178,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         {
             CheckErrors();
             var evalOpt = opt != null ? opt.Merge(LgOptions) : LgOptions;
-            var evaluator = new Evaluator(AllTemplates.ToList(), ExpressionParser, evalOpt, EventRegister);
+            var evaluator = new Evaluator(AllTemplates.ToList(), ExpressionParser, evalOpt);
             return evaluator.EvaluateTemplate(templateName, scope);
         }
 

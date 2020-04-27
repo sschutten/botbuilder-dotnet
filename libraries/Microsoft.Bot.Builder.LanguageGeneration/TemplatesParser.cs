@@ -85,10 +85,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             }
 
             var id = "inline content";
-            var newLG = new Templates(content: content, id: id, importResolver: lg.ImportResolver, options: lg.Options)
-            {
-                EventRegister = lg.EventRegister
-            };
+            var newLG = new Templates(content: content, id: id, importResolver: lg.ImportResolver, options: lg.Options);
 
             try
             {
@@ -329,7 +326,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
                     CheckTemplateName(templateName, context.templateNameLine());
                     CheckTemplateParameters(parameters, context.templateNameLine());
-                    template.TemplateBodyParseTree = CheckTemplateBody(templateName, templateBody, context.templateBody(), startLine);
+                    CheckTemplateBody(template, context.templateBody(), startLine);
 
                     this.templates.Add(template);
                 }
@@ -337,18 +334,23 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 return null;
             }
 
-            private LGTemplateParser.BodyContext CheckTemplateBody(string templateName, string templateBody, LGFileParser.TemplateBodyContext context, int startLine)
+            private LGTemplateParser.BodyContext CheckTemplateBody(Template template, LGFileParser.TemplateBodyContext context, int startLine)
             {
-                if (string.IsNullOrWhiteSpace(templateBody))
+                if (string.IsNullOrWhiteSpace(template.Body))
                 {
-                    var diagnostic = BuildTemplatesDiagnostic(TemplateErrors.NoTemplateBody(templateName), context, DiagnosticSeverity.Warning);
+                    var diagnostic = BuildTemplatesDiagnostic(TemplateErrors.NoTemplateBody(template.Name), context, DiagnosticSeverity.Warning);
                     this.templates.Diagnostics.Add(diagnostic);
                 }
                 else
                 {
                     try
                     {
-                        return AntlrParseTemplate(templateBody, startLine);
+                        var templateBodyContext = AntlrParseTemplate(template.Body, startLine);
+                        if (templateBodyContext != null)
+                        {
+                            template.TemplateBodyParseTree = templateBodyContext;
+                            new TemplateBodyTransformer(template).Transform();
+                        }
                     }
                     catch (TemplateException e)
                     {
@@ -443,6 +445,173 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             private Diagnostic BuildTemplatesDiagnostic(string errorMessage, ParserRuleContext context, DiagnosticSeverity severity = DiagnosticSeverity.Error)
             {
                 return new Diagnostic(context.ConvertToRange(), errorMessage, severity, this.templates.Id);
+            }
+        }
+
+        private class TemplateBodyTransformer : LGTemplateParserBaseVisitor<object>
+        {
+            private readonly Template template;
+
+            public TemplateBodyTransformer(Template template)
+            {
+                this.template = template;
+            }
+
+            public void Transform()
+            {
+                Visit(template.TemplateBodyParseTree);
+            }
+
+            public override object VisitNormalTemplateBody([NotNull] LGTemplateParser.NormalTemplateBodyContext context)
+            {
+                foreach (var templateStr in context.templateString())
+                {
+                    var errorTemplateStr = templateStr.errorTemplateString();
+                    if (errorTemplateStr == null)
+                    {
+                        return Visit(templateStr.normalTemplateString());
+                    }
+                }
+
+                return null;
+            }
+
+            public override object VisitStructuredTemplateBody([NotNull] LGTemplateParser.StructuredTemplateBodyContext context)
+            {
+                if (context.structuredBodyNameLine().errorStructuredName() == null
+                    && context.structuredBodyEndLine() != null
+                    && (context.errorStructureLine() == null || context.errorStructureLine().Length == 0)
+                    && (context.structuredBodyContentLine() != null && context.structuredBodyContentLine().Length > 0))
+                {
+                    var bodys = context.structuredBodyContentLine();
+                    foreach (var body in bodys)
+                    {
+                        if (body.objectStructureLine() != null)
+                        {
+                            FillInExpression(body.objectStructureLine().GetText(), body.objectStructureLine());
+                        }
+                        else
+                        {
+                            // KeyValueStructuredLine
+                            var structureValues = body.keyValueStructureLine().keyValueStructureValue();
+                            foreach (var structureValue in structureValues)
+                            {
+                                foreach (var expression in structureValue.EXPRESSION_IN_STRUCTURE_BODY())
+                                {
+                                    FillInExpression(expression.GetText(), structureValue);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            public override object VisitIfElseBody([NotNull] LGTemplateParser.IfElseBodyContext context)
+            {
+                var ifRules = context.ifElseTemplateBody().ifConditionRule();
+                for (var idx = 0; idx < ifRules.Length; idx++)
+                {
+                    var conditionNode = ifRules[idx].ifCondition();
+                    var ifExpr = conditionNode.IF() != null;
+                    var elseIfExpr = conditionNode.ELSEIF() != null;
+                    var elseExpr = conditionNode.ELSE() != null;
+
+                    var node = ifExpr ? conditionNode.IF() :
+                               elseIfExpr ? conditionNode.ELSEIF() :
+                               conditionNode.ELSE();
+
+                    if (node.GetText().Count(u => u == ' ') > 1
+                        || (idx == 0 && !ifExpr)
+                        || (idx > 0 && ifExpr)
+                        || (idx == ifRules.Length - 1 && !elseExpr)
+                        || (idx > 0 && idx < ifRules.Length - 1 && !elseIfExpr))
+                    {
+                        return null;
+                    }
+
+                    if (!elseExpr && (ifRules[idx].ifCondition().EXPRESSION().Length == 1))
+                    {
+                        FillInExpression(conditionNode.EXPRESSION(0).GetText(), conditionNode);
+                    }
+
+                    if (ifRules[idx].normalTemplateBody() != null)
+                    {
+                        Visit(ifRules[idx].normalTemplateBody());
+                    }
+                }
+
+                return null;
+            }
+
+            public override object VisitSwitchCaseBody([NotNull] LGTemplateParser.SwitchCaseBodyContext context)
+            {
+                var switchCaseRules = context.switchCaseTemplateBody().switchCaseRule();
+                var length = switchCaseRules.Length;
+                for (var idx = 0; idx < length; idx++)
+                {
+                    var switchCaseNode = switchCaseRules[idx].switchCaseStat();
+                    var switchExpr = switchCaseNode.SWITCH() != null;
+                    var caseExpr = switchCaseNode.CASE() != null;
+                    var defaultExpr = switchCaseNode.DEFAULT() != null;
+                    var node = switchExpr ? switchCaseNode.SWITCH() :
+                               caseExpr ? switchCaseNode.CASE() :
+                               switchCaseNode.DEFAULT();
+
+                    if (node.GetText().Count(u => u == ' ') > 1
+                        || (idx == 0 && !switchExpr)
+                        || (idx > 0 && switchExpr)
+                        || (idx > 0 && idx < length - 1 && !caseExpr)
+                        || (idx == length - 1 && caseExpr)
+                        || (idx == length - 1 && defaultExpr && length == 2))
+                    {
+                        return null;
+                    }
+
+                    if ((switchExpr || caseExpr) && switchCaseNode.EXPRESSION().Length == 1)
+                    {
+                        FillInExpression(switchCaseNode.EXPRESSION(0).GetText(), switchCaseNode);
+                    }
+
+                    if ((caseExpr || defaultExpr) && switchCaseRules[idx].normalTemplateBody() != null)
+                    {
+                        Visit(switchCaseRules[idx].normalTemplateBody());
+                    }
+                }
+
+                return null;
+            }
+
+            public override object VisitNormalTemplateString([NotNull] LGTemplateParser.NormalTemplateStringContext context)
+            {
+                foreach (var expression in context.EXPRESSION())
+                {
+                    FillInExpression(expression.GetText(), context);
+                }
+
+                return null;
+            }
+
+            private object FillInExpression(string exp, ParserRuleContext context)
+            {
+                if (!exp.EndsWith("}"))
+                {
+                    return null;
+                }
+
+                exp = exp.TrimExpression();
+
+                var source = this.template.SourceRange.Source;
+                if (Path.IsPathRooted(source) && context != null)
+                {
+                    var lineOffset = this.template.SourceRange.Range.Start.Line;
+                    var sourceRange = new SourceRange(context, source, lineOffset);
+                    var expressionRef = new ExpressionRef(exp, sourceRange);
+                    template.Expressions.Add(expressionRef);
+                }
+
+                return null;
             }
         }
     }

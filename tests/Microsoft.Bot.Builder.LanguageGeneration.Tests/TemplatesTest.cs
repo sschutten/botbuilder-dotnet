@@ -9,7 +9,6 @@ using System.Linq;
 using AdaptiveExpressions;
 using AdaptiveExpressions.Memory;
 using Microsoft.Bot.Builder.LanguageGeneration;
-using Microsoft.Bot.Builder.LanguageGeneration.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -1209,44 +1208,10 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
         }
 
         [TestMethod]
-        public void TestRegisteSourceMapEvents()
-        {
-            var expressionNumber = 0;
-            var templateNumber = 0;
-
-            EventHandler registeSourceMapEventsHandler = (object sender, EventArgs e) =>
-            {
-                if (e is RegisterSourceMapArgs sm)
-                {
-                    if (sender is ExpressionRef expressionRef)
-                    {
-                        expressionNumber++;
-                        Assert.AreEqual("if(name==null, 'friend', name)", expressionRef.Expression);
-                    }
-                    else if (sender is Template template)
-                    {
-                        templateNumber++;
-                        Assert.AreEqual("template1", template.Name);
-                    }
-                }
-            };
-
-            var templates = Templates.ParseFile(GetExampleFilePath("Event.lg"));
-            templates.AddDebuggingEventRegister(registeSourceMapEventsHandler);
-            Assert.AreEqual(1, expressionNumber);
-            Assert.AreEqual(1, templateNumber);
-        }
-
-        [TestMethod]
         public void TestTemplateAndExpressionEvaluationEvents()
         {
             var expressionEvalTime = 0;
             var templateEvalTime = 0;
-
-            EventHandler registeSourceMapEventsHandler = (object sender, EventArgs e) =>
-            {
-                // do nothing
-            };
 
             EventHandler onEvent = (object sender, EventArgs e) =>
             {
@@ -1272,7 +1237,6 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
             };
 
             var templates = Templates.ParseFile(GetExampleFilePath("Event.lg"));
-            templates.AddDebuggingEventRegister(registeSourceMapEventsHandler);
             var result = templates.Evaluate("template1", null, new EvaluationOptions { OnEvent = onEvent });
             Assert.AreEqual(1, expressionEvalTime);
             Assert.AreEqual(1, templateEvalTime);
