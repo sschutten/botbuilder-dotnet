@@ -466,7 +466,9 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
                 if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null && eventRegister != null)
                 {
-                    var id = exp + context.Start.Line + source;
+                    var lineOffset = TemplateMap[CurrentTarget().TemplateName].SourceRange.Range.Start.Line;
+                    var expressionLine = lineOffset + context.Start.Line;
+                    var id = exp + expressionLine + source;
                     if (eventRegister.ExpressionRefDict.ContainsKey(id))
                     {
                         lgOptions.OnEvent(eventRegister.ExpressionRefDict[id], new BeginExpressionEvaluationArgs { Source = source, Expression = exp });

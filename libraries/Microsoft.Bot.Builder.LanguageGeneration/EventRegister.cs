@@ -190,15 +190,16 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             exp = exp.TrimExpression();
 
-            var source = currentTemplate.SourceRange.Source;
-            if (Path.IsPathRooted(source) && context != null && this.onRegisterEvent != null)
+            var source = currentTemplate?.SourceRange?.Source;
+            if (source != null && Path.IsPathRooted(source) && context != null && this.onRegisterEvent != null)
             {
                 var expressionRef = new ExpressionRef(exp, context.Start.Line, source);
                 var lineOffset = this.currentTemplate.SourceRange.Range.Start.Line;
                 var sourceRange = new SourceRange(context, source, lineOffset);
                 this.onRegisterEvent(expressionRef, new RegisterSourceMapArgs { SourceRange = sourceRange });
 
-                var id = exp + context.Start.Line + source;
+                var expressionLine = lineOffset + context.Start.Line;
+                var id = exp + expressionLine + source;
                 if (!ExpressionRefDict.ContainsKey(id))
                 {
                     ExpressionRefDict.Add(id, expressionRef);
