@@ -140,10 +140,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         {
             foreach (var template in templates)
             {
-                RegisterTemplateSourcemap(template);
+                RegisterSourcemap(template, template.SourceRange);
                 foreach (var expressionRef in template.Expressions)
                 {
-                    RegisterExpressionSourcemap(expressionRef);
+                    RegisterSourcemap(expressionRef, expressionRef.SourceRange);
                 }
             }
         }
@@ -160,16 +160,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             DebugSupport.SourceMap.Add(template, debugSM);
         }
 
-        private void RegisterExpressionSourcemap(ExpressionRef expressionRef)
+        private void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr)
         {
-            var sourceRange = expressionRef.SourceRange;
             var debugSM = new Debugging.SourceRange(
-                    sourceRange.Source,
-                    sourceRange.Range.Start.Line,
-                    sourceRange.Range.Start.Character,
-                    sourceRange.Range.End.Line,
-                    sourceRange.Range.End.Character);
-            DebugSupport.SourceMap.Add(expressionRef, debugSM);
+                    sr.Source,
+                    sr.Range.Start.Line,
+                    sr.Range.Start.Character,
+                    sr.Range.End.Line,
+                    sr.Range.End.Character);
+            DebugSupport.SourceMap.Add(item, debugSM);
         }
     }
 }
