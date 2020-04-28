@@ -382,9 +382,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 if (currentTemplate != null)
                 {
                     evaluationTargetStack.Pop();
+                    Evaluator.CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                 }
-
-                Evaluator.CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
             }
             else if (error != null
                 || result == null
@@ -408,9 +407,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 if (currentTemplate != null)
                 {
                     evaluationTargetStack.Pop();
+                    Evaluator.CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                 }
-
-                Evaluator.CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
             }
             else if (result == null && lgOptions.StrictMode == false)
             {

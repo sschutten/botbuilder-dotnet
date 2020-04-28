@@ -414,8 +414,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 var currentTemplate = CurrentTemplate();
                 if (currentTemplate != null)
                 {
-                    CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                     evaluationTargetStack.Pop();
+                    CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                 }
             }
             else if (error != null
@@ -439,8 +439,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 var currentTemplate = CurrentTemplate();
                 if (currentTemplate != null)
                 {
-                    CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                     evaluationTargetStack.Pop();
+                    CheckExpressionResult(exp, error, result, currentTemplate.Name, context, errorPrefix);
                 }
             }
             else if (result == null && lgOptions.StrictMode != false)
