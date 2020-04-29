@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs.Debugging;
 using Microsoft.Bot.Builder.Dialogs.Declarative.Resources;
@@ -21,6 +23,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         public const string Kind = "Microsoft.TemplateEngineLanguageGenerator";
 
         private const string DEFAULTLABEL = "Unknown";
+
+        private static readonly TaskFactory TaskFactory = new TaskFactory(
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            TaskContinuationOptions.None,
+            TaskScheduler.Default);
 
         private readonly LanguageGeneration.Templates lg;
 
@@ -90,7 +98,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <returns>generated text.</returns>
         public override async Task<string> Generate(DialogContext dialogContext, string template, object data)
         {
-            EventHandler onEvent = (s, e) => HandlerLGEvent(dialogContext, s, e);
+            EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEvent(dialogContext, s, e));
 
             try
             {
@@ -107,29 +115,33 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private void HandlerLGEvent(DialogContext dialogContext, object sender, EventArgs e)
+        private async Task HandlerLGEvent(DialogContext dialogContext, object sender, EventArgs e)
         {
             if (e is LGEventArgs le && Path.IsPathRooted(le.Source))
             {
-                Task task = null;
                 if (e is BeginTemplateEvaluationArgs be)
                 {
-                    task = dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
+                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
                 }
                 else if (e is BeginExpressionEvaluationArgs expr)
                 {
-                    task = dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
+                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
                 }
                 else if (e is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
                 {
-                    task = dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
-                }
-
-                if (task != null)
-                {
-                    task.Wait();
+                    await dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
                 }
             }
+        }
+
+        private void RunSync(Func<Task> func)
+        {
+            var culture = CultureInfo.CurrentCulture;
+            TaskFactory.StartNew(() =>
+            {
+                Thread.CurrentThread.CurrentCulture = culture;
+                return func();
+            }).Unwrap().GetAwaiter().GetResult();
         }
 
         private void RegisterSourcemap(LanguageGeneration.Templates templates)
