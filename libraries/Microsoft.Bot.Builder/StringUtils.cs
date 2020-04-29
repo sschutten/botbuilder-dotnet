@@ -17,7 +17,6 @@ namespace Microsoft.Bot.Builder
         /// <returns>string length + ...</returns>
         public static string Ellipsis(string text, int length)
         {
-            text = text ?? string.Empty;
             if (text.Length <= length)
             {
                 return text;
@@ -33,7 +32,6 @@ namespace Microsoft.Bot.Builder
         /// <returns>string which is unique SHA256 hash.</returns>
         public static string Hash(string text)
         {
-            text = text ?? string.Empty;
             using (var sha256Hash = SHA256.Create())
             {
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(text));
@@ -49,7 +47,6 @@ namespace Microsoft.Bot.Builder
         /// <returns>prefix up to length + ... + uniquehash(text).</returns>
         public static string EllipsisHash(string text, int length)
         {
-            text = text ?? string.Empty;
             if (text.Length <= length)
             {
                 return text;
