@@ -26,7 +26,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         // PCRE: (?<!\\)\${(('(\\('|\\)|[^'])*?')|("(\\("|\\)|[^"])*?")|(`(\\(`|\\)|[^`])*?`)|([^\r\n{}'"`])|({\s*}))+}?
         public static readonly string RegexString = @"(?<!\\)\${(('(\\('|\\)|[^'])*?')|(""(\\(""|\\)|[^""])*?"")|(`(\\(`|\\)|[^`])*?`)|([^\r\n{}'""`])|({\s*}))+}?";
         public static readonly Regex ExpressionRecognizeRegex = new Regex(RegexString, RegexOptions.Compiled);
-        public static readonly Regex NewLineRegex = new Regex("(\r?\n)");
         private const string ReExecuteSuffix = "!";
         private readonly Stack<EvaluationTarget> evaluationTargetStack = new Stack<EvaluationTarget>();
         private readonly EvaluationOptions lgOptions;
@@ -126,11 +125,6 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             if (previousEvaluateTarget != null)
             {
                 previousEvaluateTarget.EvaluatedChildren[currentEvaluateId] = result;
-            }
-
-            if (lgOptions.LineBreakStyle == LGLineBreakStyle.Markdown && result is string str)
-            {
-                result = NewLineRegex.Replace(str, "$1$1");
             }
 
             if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
@@ -291,7 +285,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             }
 
             var parameters = TemplateMap[templateName].Parameters;
-            var currentScope = CurrentTarget().Scope;
+            var currentScope = evaluationTargetStack.Count > 0 ? CurrentTarget().Scope : new CustomizedMemory(null);
 
             if (args.Count == 0)
             {
