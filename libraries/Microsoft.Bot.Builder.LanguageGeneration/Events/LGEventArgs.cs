@@ -2,8 +2,10 @@
 
 namespace Microsoft.Bot.Builder.LanguageGeneration
 {
-    public class TemplatesEventArgs : EventArgs
+    public class LGEventArgs : EventArgs
     {
+        public string Type { get; } = "lgEvents";
+
         /// <summary>
         /// Gets or sets source id of the lg file.
         /// </summary>

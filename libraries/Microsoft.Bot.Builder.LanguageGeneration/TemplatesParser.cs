@@ -606,7 +606,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 {
                     var lineOffset = this.template.SourceRange.Range.Start.Line;
                     var sourceRange = new SourceRange(context, source, lineOffset);
-                    var expressionRef = new ExpressionContext(exp, sourceRange);
+                    var expressionRef = new ExpressionRef(exp, sourceRange);
                     template.Expressions.Add(expressionRef);
                 }
 

@@ -53,7 +53,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var (_, locale) = LGResourceLoader.ParseLGFileName(id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
             this.lg = LanguageGeneration.Templates.ParseText(lgText ?? string.Empty, Id, importResolver);
-            AddDebuggingEventRegister(lg);
+            RegisterSourcemap(lg);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var (_, locale) = LGResourceLoader.ParseLGFileName(Id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
             this.lg = LanguageGeneration.Templates.ParseFile(filePath, importResolver);
-            AddDebuggingEventRegister(lg);
+            RegisterSourcemap(lg);
         }
 
         /// <summary>
@@ -90,9 +90,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <returns>generated text.</returns>
         public override async Task<string> Generate(DialogContext dialogContext, string template, object data)
         {
-            EventHandler onEvent = async (s, e) => await HandlerTemplateEvaluationEvent(dialogContext, s, e);
-            onEvent += async (s, e) => await HandlerExpressionEvaluationEvent(dialogContext, s, e);
-            onEvent += async (s, e) => await HandlerMessageEvent(dialogContext, s, e);
+            EventHandler onEvent = async (s, e) => await HandlerLGEvent(dialogContext, s, e);
 
             try
             {
@@ -109,34 +107,26 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private async Task HandlerTemplateEvaluationEvent(DialogContext dialogContext, object sender, EventArgs e)
+        private async Task HandlerLGEvent(DialogContext dialogContext, object sender, EventArgs e)
         {
-            if (e is BeginTemplateEvaluationArgs be && Path.IsPathRooted(be.Source))
+            if (e is LGEventArgs le && Path.IsPathRooted(le.Source))
             {
-                await dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
-            }
-        }
-
-        private async Task HandlerExpressionEvaluationEvent(DialogContext dialogContext, object sender, EventArgs e)
-        {
-            if (e is BeginExpressionEvaluationArgs expr && Path.IsPathRooted(expr.Source))
-            {
-                await dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
-            }
-        }
-
-        private async Task HandlerMessageEvent(DialogContext dialogContext, object sender, EventArgs e)
-        {
-            if (e is MessageArgs message && Path.IsPathRooted(message.Source))
-            {
-                if (dialogContext.GetDebugger() is IDebugger dda)
+                if (e is BeginTemplateEvaluationArgs be)
+                {
+                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
+                }
+                else if (e is BeginExpressionEvaluationArgs expr)
+                {
+                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
+                }
+                else if (e is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
                 {
                     await dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
                 }
             }
         }
 
-        private void AddDebuggingEventRegister(LanguageGeneration.Templates templates)
+        private void RegisterSourcemap(LanguageGeneration.Templates templates)
         {
             foreach (var template in templates)
             {
@@ -156,6 +146,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                     sr.Range.Start.Character,
                     sr.Range.End.Line,
                     sr.Range.End.Character);
+
             if (!DebugSupport.SourceMap.TryGetValue(item, out var _))
             {
                 DebugSupport.SourceMap.Add(item, debugSM);

@@ -3,9 +3,9 @@
     /// <summary>
     /// Expression container with source range.
     /// </summary>
-    public class ExpressionContext
+    public class ExpressionRef
     {
-        public ExpressionContext(string expression, SourceRange sourceRange)
+        public ExpressionRef(string expression, SourceRange sourceRange)
         {
             this.Expression = expression;
             this.SourceRange = sourceRange;
