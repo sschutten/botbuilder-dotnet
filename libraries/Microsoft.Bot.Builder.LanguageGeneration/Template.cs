@@ -35,10 +35,10 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         }
 
         /// <summary>
-        /// Gets or sets expression context list.
+        /// Gets or sets expression reference list.
         /// </summary>
         /// <value>
-        /// Expression context list.
+        /// Expression reference list.
         /// </value>
         public IList<ExpressionRef> Expressions { get; set; }
 
