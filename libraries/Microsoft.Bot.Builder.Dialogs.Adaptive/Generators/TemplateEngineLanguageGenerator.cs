@@ -90,7 +90,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <returns>generated text.</returns>
         public override async Task<string> Generate(DialogContext dialogContext, string template, object data)
         {
-            EventHandler onEvent = async (s, e) => await HandlerLGEvent(dialogContext, s, e);
+            EventHandler onEvent = (s, e) => HandlerLGEvent(dialogContext, s, e);
 
             try
             {
@@ -107,21 +107,27 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private async Task HandlerLGEvent(DialogContext dialogContext, object sender, EventArgs e)
+        private void HandlerLGEvent(DialogContext dialogContext, object sender, EventArgs e)
         {
             if (e is LGEventArgs le && Path.IsPathRooted(le.Source))
             {
+                Task task = null;
                 if (e is BeginTemplateEvaluationArgs be)
                 {
-                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
+                    task = dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
                 }
                 else if (e is BeginExpressionEvaluationArgs expr)
                 {
-                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
+                    task = dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
                 }
                 else if (e is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
                 {
-                    await dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
+                    task = dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
+                }
+
+                if (task != null)
+                {
+                    task.Wait();
                 }
             }
         }
