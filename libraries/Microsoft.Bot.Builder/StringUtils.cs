@@ -66,7 +66,6 @@ namespace Microsoft.Bot.Builder
         /// <returns>original stringbuilder modified.</returns>
         public static StringBuilder Ellipsis(StringBuilder sb, int length)
         {
-            sb = sb ?? new StringBuilder();
             if (sb.Length > length)
             {
                 sb.Length = length;
@@ -84,7 +83,6 @@ namespace Microsoft.Bot.Builder
         /// <returns>original stringbuilder modified.</returns>
         public static StringBuilder EllipsisHash(StringBuilder sb, int length)
         {
-            sb = sb ?? new StringBuilder();
             if (sb.Length > length)
             {
                 var hash = Hash(sb.ToString());
