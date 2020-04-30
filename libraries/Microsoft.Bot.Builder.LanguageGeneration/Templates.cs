@@ -158,7 +158,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// </summary>
         /// <param name="filePath">Absolute path of a LG file.</param>
         /// <param name="importResolver">Resolver to resolve LG import id to template text.</param>
-        /// <param name="expressionParser">ExpressionEngine Expression engine for evaluating expressions.</param>
+        /// <param name="expressionParser">Expression parser to parse string expression into <see cref="Expression"/>.</param>
         /// <returns>new <see cref="LanguageGeneration.Templates"/> entity.</returns>
         public static Templates ParseFile(
             string filePath,
