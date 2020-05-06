@@ -119,17 +119,14 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         {
             if (e is LGEventArgs le && Path.IsPathRooted(le.Source))
             {
-                if (e is BeginTemplateEvaluationArgs be)
+                var eventType = DialogEvents.LGEvents;
+                if (e is BeginTemplateEvaluationArgs || e is BeginExpressionEvaluationArgs)
                 {
-                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, be.Type, new System.Threading.CancellationToken());
-                }
-                else if (e is BeginExpressionEvaluationArgs expr)
-                {
-                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, expr.Type, new System.Threading.CancellationToken());
+                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, eventType, new CancellationToken());
                 }
                 else if (e is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
                 {
-                    await dda.OutputAsync(message.Text, sender, message.Text, new System.Threading.CancellationToken());
+                    await dda.OutputAsync(message.Text, sender, message.Text, new CancellationToken());
                 }
             }
         }
