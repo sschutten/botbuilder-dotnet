@@ -96,13 +96,13 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <param name="template">template to evaluate.</param>
         /// <param name="data">data to bind to.</param>
         /// <returns>generated text.</returns>
-        public override async Task<string> Generate(DialogContext dialogContext, string template, object data)
+        public override async Task<object> Generate(DialogContext dialogContext, string template, object data)
         {
             EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEvent(dialogContext, s, e));
 
             try
             {
-                return await Task.FromResult(lg.EvaluateText(template, data, new EvaluationOptions { OnEvent = onEvent }).ToString());
+                return await Task.FromResult(lg.EvaluateText(template, data, new EvaluationOptions { OnEvent = onEvent }));
             }
             catch (Exception err)
             {
