@@ -113,6 +113,11 @@ namespace Microsoft.Bot.Builder.Dialogs
 
             if (_dialogs.ContainsKey(dialog.Id))
             {
+                if (_dialogs[dialog.Id] == dialog)
+                {
+                    return this;
+                }
+
                 var nextSuffix = 2;
 
                 while (true)

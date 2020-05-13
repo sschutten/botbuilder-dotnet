@@ -57,6 +57,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Samples\DoubleReference\DoubleReference.dialog">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Samples\DoubleReference\sub0.dialog">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Samples\DoubleReference\sub2.dialog">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Samples\DoubleReference\sub3.dialog">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Samples\CycleDetection\Child1.dialog">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
