@@ -143,7 +143,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         private void RegisterSourcemap(LanguageGeneration.Templates templates)
         {
-            foreach (var template in templates)
+            foreach (var template in templates.AllTemplates)
             {
                 RegisterSourcemap(template, template.SourceRange);
                 foreach (var expressionRef in template.Expressions)

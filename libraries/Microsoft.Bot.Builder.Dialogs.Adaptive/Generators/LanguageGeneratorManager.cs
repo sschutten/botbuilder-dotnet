@@ -67,8 +67,14 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 }
                 else
                 {
+                    var resourceId = resource.Id;
+                    if (resource is FileResource fileResource)
+                    {
+                        resourceId = fileResource.FullName;
+                    }
+
                     var content = resource.ReadTextAsync().GetAwaiter().GetResult();
-                    return (content, resource.Id);
+                    return (content, resourceId);
                 }
             };
         }
