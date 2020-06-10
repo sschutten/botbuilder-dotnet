@@ -95,14 +95,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <param name="dialogContext">Context for the current turn of conversation.</param>
         /// <param name="template">template to evaluate.</param>
         /// <param name="data">data to bind to.</param>
+        /// <param name="cancellationToken">the <see cref="CancellationToken"/> for the task.</param>
         /// <returns>generated text.</returns>
-        public override async Task<object> Generate(DialogContext dialogContext, string template, object data)
+        public override Task<object> GenerateAsync(DialogContext dialogContext, string template, object data, CancellationToken cancellationToken = default)
         {
             EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEvent(dialogContext, s, e));
 
             try
             {
-                return await Task.FromResult(lg.EvaluateText(template, data, new EvaluationOptions { OnEvent = onEvent }));
+                return Task.FromResult(lg.EvaluateText(template, data, new EvaluationOptions { OnEvent = onEvent }));
             }
             catch (Exception err)
             {

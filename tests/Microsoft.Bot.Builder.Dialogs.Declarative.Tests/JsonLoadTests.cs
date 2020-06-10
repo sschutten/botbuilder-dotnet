@@ -37,6 +37,17 @@ namespace Microsoft.Bot.Builder.Dialogs.Loader.Tests
         }
 
         [TestMethod]
+        public async Task JsonDialogLoad_DoubleReference()
+        {
+            await BuildTestFlow(@"DoubleReference.dialog")
+                .SendConversationUpdate()
+                .AssertReply("what is your name?")
+                .Send("c")
+                .AssertReply("sub0")
+            .StartTestAsync();
+        }
+
+        [TestMethod]
         public async Task JsonDialogLoad_CycleDetection()
         {
             await BuildTestFlow(@"Root.dialog")
@@ -433,7 +444,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Loader.Tests
             var dm = new DialogManager(dialog)
                 .UseResourceExplorer(resourceExplorer)
                 .UseLanguageGeneration();
-            dm.TurnState.Add<IQnAMakerClient>(new MockQnAMakerClient()); 
+            dm.InitialTurnState.Add<IQnAMakerClient>(new MockQnAMakerClient()); 
 
             return new TestFlow(adapter, async (turnContext, cancellationToken) =>
             {
