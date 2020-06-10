@@ -99,7 +99,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <returns>generated text.</returns>
         public override Task<object> GenerateAsync(DialogContext dialogContext, string template, object data, CancellationToken cancellationToken = default)
         {
-            EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEvent(dialogContext, s, e));
+            EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEventAsync(dialogContext, s, e));
 
             try
             {
@@ -116,18 +116,18 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private async Task HandlerLGEvent(DialogContext dialogContext, object sender, EventArgs e)
+        private async Task HandlerLGEventAsync(DialogContext dialogContext, object sender, EventArgs e)
         {
             if (e is LGEventArgs le && Path.IsPathRooted(le.Source))
             {
                 var eventType = DialogEvents.LGEvents;
                 if (e is BeginTemplateEvaluationArgs || e is BeginExpressionEvaluationArgs)
                 {
-                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, eventType, new CancellationToken());
+                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, eventType, new CancellationToken()).ConfigureAwait(false);
                 }
                 else if (e is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
                 {
-                    await dda.OutputAsync(message.Text, sender, message.Text, new CancellationToken());
+                    await dda.OutputAsync(message.Text, sender, message.Text, new CancellationToken()).ConfigureAwait(false);
                 }
             }
         }
