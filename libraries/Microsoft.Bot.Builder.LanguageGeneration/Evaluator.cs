@@ -456,16 +456,16 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             // just don't want to write evaluationTargetStack.Peek() everywhere
             evaluationTargetStack.Peek();
 
-        private (object value, string error) EvalByAdaptiveExpression(string exp, object scope, ParserRuleContext context)
+        private (object value, string error) EvalByAdaptiveExpression(string exp, object scope, ParserRuleContext expressionContext)
         {
             var currentTemplate = CurrentTemplate();
             if (currentTemplate != null)
             {
                 var source = currentTemplate.SourceRange.Source;
-                if (Path.IsPathRooted(source) && context != null && lgOptions.OnEvent != null)
+                if (Path.IsPathRooted(source) && expressionContext != null && lgOptions.OnEvent != null)
                 {
                     var lineOffset = currentTemplate.SourceRange.Range.Start.Line;
-                    var sourceRange = new SourceRange(context, source, lineOffset);
+                    var sourceRange = new SourceRange(expressionContext, source, lineOffset);
                     var expressionRef = new ExpressionRef(exp, sourceRange);
 
                     var expression = currentTemplate.Expressions.FirstOrDefault(u => u.GetId() == expressionRef.GetId());
