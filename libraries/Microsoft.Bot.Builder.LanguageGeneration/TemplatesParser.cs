@@ -495,9 +495,9 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                     var bodys = context.structuredBodyContentLine();
                     foreach (var body in bodys)
                     {
-                        if (body.objectStructureLine() != null)
+                        if (body.expressionInStructure() != null)
                         {
-                            FillInExpression(body.objectStructureLine().GetText(), body.objectStructureLine());
+                            FillInExpression(body.expressionInStructure());
                         }
                         else
                         {
@@ -505,9 +505,9 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                             var structureValues = body.keyValueStructureLine().keyValueStructureValue();
                             foreach (var structureValue in structureValues)
                             {
-                                foreach (var expression in structureValue.EXPRESSION_IN_STRUCTURE_BODY())
+                                foreach (var expression in structureValue.expressionInStructure())
                                 {
-                                    FillInExpression(expression.GetText(), structureValue);
+                                    FillInExpression(expression);
                                 }
                             }
                         }
@@ -532,17 +532,15 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                                conditionNode.ELSE();
 
                     if (node.GetText().Count(u => u == ' ') > 1
-                        || (idx == 0 && !ifExpr)
                         || (idx > 0 && ifExpr)
-                        || (idx == ifRules.Length - 1 && !elseExpr)
                         || (idx > 0 && idx < ifRules.Length - 1 && !elseIfExpr))
                     {
                         return null;
                     }
 
-                    if (!elseExpr && (ifRules[idx].ifCondition().EXPRESSION().Length == 1))
+                    if (!elseExpr && (ifRules[idx].ifCondition().expression().Length == 1))
                     {
-                        FillInExpression(conditionNode.EXPRESSION(0).GetText(), conditionNode);
+                        FillInExpression(conditionNode.expression(0));
                     }
 
                     if (ifRules[idx].normalTemplateBody() != null)
@@ -571,16 +569,14 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                     if (node.GetText().Count(u => u == ' ') > 1
                         || (idx == 0 && !switchExpr)
                         || (idx > 0 && switchExpr)
-                        || (idx > 0 && idx < length - 1 && !caseExpr)
-                        || (idx == length - 1 && caseExpr)
-                        || (idx == length - 1 && defaultExpr && length == 2))
+                        || (idx > 0 && idx < length - 1 && !caseExpr))
                     {
                         return null;
                     }
 
-                    if ((switchExpr || caseExpr) && switchCaseNode.EXPRESSION().Length == 1)
+                    if ((switchExpr || caseExpr) && switchCaseNode.expression().Length == 1)
                     {
-                        FillInExpression(switchCaseNode.EXPRESSION(0).GetText(), switchCaseNode);
+                        FillInExpression(switchCaseNode.expression(0));
                     }
 
                     if ((caseExpr || defaultExpr) && switchCaseRules[idx].normalTemplateBody() != null)
@@ -594,33 +590,31 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             public override object VisitNormalTemplateString([NotNull] LGTemplateParser.NormalTemplateStringContext context)
             {
-                foreach (var expression in context.EXPRESSION())
+                foreach (var expression in context.expression())
                 {
-                    FillInExpression(expression.GetText(), context);
+                    FillInExpression(expression);
                 }
 
                 return null;
             }
 
-            private object FillInExpression(string exp, ParserRuleContext context)
+            private void FillInExpression(ParserRuleContext expressionContext)
             {
-                if (!exp.EndsWith("}"))
+                if (expressionContext == null)
                 {
-                    return null;
+                    return;
                 }
 
-                exp = exp.TrimExpression();
+                var exp = expressionContext.GetText().TrimExpression();
 
                 var source = this.template.SourceRange.Source;
-                if (Path.IsPathRooted(source) && context != null)
+                if (Path.IsPathRooted(source))
                 {
                     var lineOffset = this.template.SourceRange.Range.Start.Line;
-                    var sourceRange = new SourceRange(context, source, lineOffset);
+                    var sourceRange = new SourceRange(expressionContext, source, lineOffset);
                     var expressionRef = new ExpressionRef(exp, sourceRange);
                     template.Expressions.Add(expressionRef);
                 }
-
-                return null;
             }
         }
     }

@@ -159,9 +159,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             var debugSM = new Debugging.SourceRange(
                     sr.Source,
                     sr.Range.Start.Line,
-                    sr.Range.Start.Character,
+                    sr.Range.Start.Character + 1,
                     sr.Range.End.Line,
-                    sr.Range.End.Character);
+                    sr.Range.End.Character + 1);
 
             if (!DebugSupport.SourceMap.TryGetValue(item, out var _))
             {
