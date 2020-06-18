@@ -1,4 +1,9 @@
-﻿namespace Microsoft.Bot.Builder.LanguageGeneration
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
+
+namespace Microsoft.Bot.Builder.LanguageGeneration
 {
     /// <summary>
     /// Expression container with source range.
@@ -33,12 +38,17 @@
         }
 
         /// <summary>
-        /// Get the unique id of erxpression context.
+        /// Get the unique id of expression context.
         /// </summary>
         /// <returns>id string.</returns>
         public string GetId()
         {
-            return SourceRange?.Source + ":" + SourceRange?.Range + ":" + Expression;
+            if (SourceRange == null)
+            {
+                throw new ArgumentNullException(nameof(SourceRange));
+            }
+
+            return SourceRange.Source + ":" + SourceRange.Range + ":" + Expression;
         }
     }
 }
