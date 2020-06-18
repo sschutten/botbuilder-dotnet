@@ -111,6 +111,25 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
         }
 
         [TestMethod]
+        public void TestExpandText()
+        {
+            var templates = Templates.ParseFile(GetExampleFilePath("ExpandText.lg"));
+
+            var scope = new JObject
+            {
+                ["@answer"] = "hello ${user.name}",
+                ["user"] = new JObject
+                {
+                    ["name"] = "vivian"
+                }
+            };
+
+            // - ${expandText(@answer)}
+            var evaled = templates.Evaluate("template", scope);
+            Assert.AreEqual("hello vivian", evaled);
+        }
+
+        [TestMethod]
         public void TestBasicSwitchCaseTemplate()
         {
             var templates = Templates.ParseFile(GetExampleFilePath("switchcase.lg"));
@@ -708,6 +727,20 @@ namespace Microsoft.Bot.Builder.AI.LanguageGeneration.Tests
             Assert.AreEqual(JObject.Parse(evaled[0].ToString())["attachments"].Count(), 0);
             Assert.AreEqual(JObject.Parse(evaled[0].ToString())["attachmentlayout"].ToString(), "list");
             Assert.AreEqual(JObject.Parse(evaled[0].ToString())["inputhint"].ToString(), "ignoringInput");
+        }
+
+        [TestMethod]
+        public void TestExpandTemplateWithStrictMode()
+        {
+            var templates = Templates.ParseFile(GetExampleFilePath("EvaluationOptions/StrictModeFalse.lg"));
+            
+            var evaled = templates.ExpandTemplate("StrictFalse");
+            Assert.AreEqual("null", evaled[0].ToString());
+
+            templates = Templates.ParseFile(GetExampleFilePath("EvaluationOptions/StrictModeTrue.lg"));
+
+            var exception = Assert.ThrowsException<Exception>(() => templates.ExpandTemplate("StrictTrue"));
+            Assert.IsTrue(exception.Message.Contains("'variable_not_defined' evaluated to null. [StrictTrue]  Error occurred when evaluating '-${variable_not_defined}'"));
         }
 
         [TestMethod]
