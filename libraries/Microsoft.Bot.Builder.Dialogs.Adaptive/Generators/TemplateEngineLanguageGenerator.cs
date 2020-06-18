@@ -99,7 +99,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <returns>generated text.</returns>
         public override Task<object> GenerateAsync(DialogContext dialogContext, string template, object data, CancellationToken cancellationToken = default)
         {
-            EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEventAsync(dialogContext, s, e));
+            EventHandler onEvent = (s, e) => RunSync(() => HandlerLGEventAsync(dialogContext, s, e, cancellationToken));
 
             try
             {
@@ -116,33 +116,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private async Task HandlerLGEventAsync(DialogContext dialogContext, object sender, EventArgs e)
+        private static void RunSync(Func<Task> func)
         {
-            if (e is LGEventArgs le && Path.IsPathRooted(le.Source))
-            {
-                var eventType = DialogEvents.LGEvents;
-                if (e is BeginTemplateEvaluationArgs || e is BeginExpressionEvaluationArgs)
-                {
-                    await dialogContext.GetDebugger().StepAsync(dialogContext, sender, eventType, new CancellationToken()).ConfigureAwait(false);
-                }
-                else if (e is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
-                {
-                    await dda.OutputAsync(message.Text, sender, message.Text, new CancellationToken()).ConfigureAwait(false);
-                }
-            }
-        }
-
-        private void RunSync(Func<Task> func)
-        {
-            var culture = CultureInfo.CurrentCulture;
             TaskFactory.StartNew(() =>
             {
-                Thread.CurrentThread.CurrentCulture = culture;
                 return func();
             }).Unwrap().GetAwaiter().GetResult();
         }
 
-        private void RegisterSourcemap(LanguageGeneration.Templates templates)
+        private static void RegisterSourcemap(LanguageGeneration.Templates templates)
         {
             foreach (var template in templates.AllTemplates)
             {
@@ -154,7 +136,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             }
         }
 
-        private void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr)
+        private static void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr)
         {
             var debugSM = new Debugging.SourceRange(
                     sr.Source,
@@ -167,6 +149,28 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
             {
                 DebugSupport.SourceMap.Add(item, debugSM);
             }
+        }
+
+        private async Task HandlerLGEventAsync(DialogContext dialogContext, object sender, EventArgs eventArgs, CancellationToken cancellationToken = default)
+        {
+            // skip the events that is not LG event or the event path is invalid.
+            if (!(eventArgs is LGEventArgs lgEventArgs) || !Path.IsPathRooted(lgEventArgs.Source))
+            {
+                await Task.CompletedTask.ConfigureAwait(false);
+            }
+
+            if (eventArgs is BeginTemplateEvaluationArgs || eventArgs is BeginExpressionEvaluationArgs)
+            {
+                // Send debugger event
+                await dialogContext.GetDebugger().StepAsync(dialogContext, sender, DialogEvents.LGEvents, cancellationToken).ConfigureAwait(false);
+            }
+            else if (eventArgs is MessageArgs message && dialogContext.GetDebugger() is IDebugger dda)
+            {
+                // send debugger message
+                await dda.OutputAsync(message.Text, sender, message.Text, cancellationToken).ConfigureAwait(false);
+            }
+
+            await Task.CompletedTask.ConfigureAwait(false);
         }
     }
 }

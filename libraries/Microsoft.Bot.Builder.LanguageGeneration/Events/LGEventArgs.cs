@@ -1,7 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using System;
 
 namespace Microsoft.Bot.Builder.LanguageGeneration
 {
+    /// <summary>
+    /// Provide basic event data of LG.
+    /// </summary>
     public class LGEventArgs : EventArgs
     {
         /// <summary>
