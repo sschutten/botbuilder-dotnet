@@ -539,7 +539,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             if (name.Equals(expandText))
             {
-                return new ExpressionEvaluator(expandText, ExpressionFunctions.Apply(this.ExpandText()), ReturnType.Boolean, ExpressionFunctions.ValidateUnaryString);
+                return new ExpressionEvaluator(expandText, ExpressionFunctions.Apply(this.ExpandText()), ReturnType.Object, ExpressionFunctions.ValidateUnaryString);
             }
 
             return null;
@@ -549,7 +549,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
        => (IReadOnlyList<object> args) =>
        {
            var stringContent = args[0].ToString();
-           var newScope = CurrentTarget().Scope;
+           var newScope = evaluationTargetStack.Count == 0 ? null : CurrentTarget().Scope;
            var newTemplates = new Templates(templates: Templates, expressionParser: expressionParser);
            return newTemplates.EvaluateText(stringContent, newScope, lgOptions);
        };
@@ -676,7 +676,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
            var resourcePath = GetResourcePath(filePath);
            var stringContent = File.ReadAllText(resourcePath);
 
-           var newScope = CurrentTarget().Scope;
+           var newScope = evaluationTargetStack.Count == 0 ? null : CurrentTarget().Scope;
            var newTemplates = new Templates(templates: Templates, expressionParser: expressionParser);
            return newTemplates.EvaluateText(stringContent, newScope, lgOptions);
        };
