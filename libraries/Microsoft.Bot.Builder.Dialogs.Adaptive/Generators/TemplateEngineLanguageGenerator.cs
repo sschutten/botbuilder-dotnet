@@ -33,6 +33,14 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplateEngineLanguageGenerator"/> class.
         /// </summary>
+        public TemplateEngineLanguageGenerator()
+        {
+            this.lg = new LanguageGeneration.Templates();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TemplateEngineLanguageGenerator"/> class.
+        /// </summary>
         /// <param name="engine">template engine.</param>
         public TemplateEngineLanguageGenerator(LanguageGeneration.Templates engine = null)
         {
