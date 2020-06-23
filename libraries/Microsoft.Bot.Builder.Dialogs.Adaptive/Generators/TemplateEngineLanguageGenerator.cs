@@ -112,16 +112,19 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         private static void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr)
         {
-            var debugSM = new Debugging.SourceRange(
+            if (Path.IsPathRooted(sr.Source))
+            {
+                var debugSM = new Debugging.SourceRange(
                     sr.Source,
                     sr.Range.Start.Line,
                     sr.Range.Start.Character + 1,
                     sr.Range.End.Line,
                     sr.Range.End.Character + 1);
 
-            if (!DebugSupport.SourceMap.TryGetValue(item, out var _))
-            {
-                DebugSupport.SourceMap.Add(item, debugSM);
+                if (!DebugSupport.SourceMap.TryGetValue(item, out var _))
+                {
+                    DebugSupport.SourceMap.Add(item, debugSM);
+                }
             }
         }
 
