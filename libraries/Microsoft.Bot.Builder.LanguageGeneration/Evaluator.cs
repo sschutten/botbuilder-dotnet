@@ -112,7 +112,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
             {
-                lgOptions.OnEvent(currentTemplate, new BeginTemplateEvaluationArgs { Source = source, TemplateName = templateName, Context = currentTemplate.SourceRange.ParseTree });
+                lgOptions.OnEvent(currentTemplate, new BeginTemplateEvaluationArgs { Source = source, TemplateName = templateName });
             }
 
             var result = Visit(currentTemplate.TemplateBodyParseTree);
@@ -124,7 +124,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
             {
                 var text = $"Evaluate template [{templateName}] get result: {result}";
-                lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = source, Text = text, Context = currentTemplate.SourceRange.ParseTree });
+                lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = source, Text = text });
             }
 
             evaluationTargetStack.Pop();
@@ -468,7 +468,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                     var expression = currentTemplate.Expressions.FirstOrDefault(u => u.GetId() == expressionRef.GetId());
                     if (expression != null)
                     {
-                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp, Context = currentTemplate.SourceRange.ParseTree });
+                        lgOptions.OnEvent(expression, new BeginExpressionEvaluationArgs { Source = source, Expression = exp });
                     }
                 }
             }
@@ -494,7 +494,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                         text = $"Evaluate expression '{exp}' get error: {result.error}";
                     }
 
-                    lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = source, Text = text, Context = currentTemplate.SourceRange.ParseTree });
+                    lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = source, Text = text });
                     }
             }
 
