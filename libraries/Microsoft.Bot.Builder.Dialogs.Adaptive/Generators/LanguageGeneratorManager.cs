@@ -28,10 +28,13 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// Initializes a new instance of the <see cref="LanguageGeneratorManager"/> class.
         /// </summary>
         /// <param name="resourceExplorer">resourceExplorer to manage LG files from.</param>
-        public LanguageGeneratorManager(ResourceExplorer resourceExplorer)
+        /// <param name="languagePolicy">Language Policy.</param>
+        public LanguageGeneratorManager(ResourceExplorer resourceExplorer, LanguagePolicy languagePolicy = null)
         {
+            languagePolicy = languagePolicy ?? new LanguagePolicy();
             this.resourceExplorer = resourceExplorer;
-            multilanguageResources = LGResourceLoader.GroupByLocale(resourceExplorer);
+
+            multilanguageResources = LGResourceLoader.GroupByLocale(resourceExplorer, languagePolicy);
 
             // load all LG resources
             foreach (var resource in this.resourceExplorer.GetResources("lg"))

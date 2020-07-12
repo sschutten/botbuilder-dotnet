@@ -13,11 +13,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
     /// </summary>
     public class LGResourceLoader
     {
-        public static Dictionary<string, IList<Resource>> GroupByLocale(ResourceExplorer resourceExplorer)
+        public static Dictionary<string, IList<Resource>> GroupByLocale(ResourceExplorer resourceExplorer, LanguagePolicy languagePolicy = null)
         {
             var resourceMapping = new Dictionary<string, IList<Resource>>();
             var allResources = resourceExplorer.GetResources("lg");
-            var languagePolicy = new LanguagePolicy();
+            languagePolicy = languagePolicy ?? new LanguagePolicy();
             foreach (var item in languagePolicy)
             {
                 var locale = item.Key;
@@ -67,7 +67,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 }
             }
 
-            return FallbackMultiLangResource(resourceMapping);
+            return FallbackMultiLangResource(resourceMapping, languagePolicy);
         }
 
         /// <summary>
@@ -102,8 +102,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// </summary>
         /// <param name="locale">current locale.</param>
         /// <param name="optionalLocales">option locales.</param>
+        /// <param name="languagePolicy">language Policy.</param>
         /// <returns>the final locale.</returns>
-        public static string FallbackLocale(string locale, IList<string> optionalLocales)
+        public static string FallbackLocale(string locale, IList<string> optionalLocales, LanguagePolicy languagePolicy = null)
         {
             if (optionalLocales == null)
             {
@@ -115,7 +116,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 return locale;
             }
 
-            var languagePolicy = new LanguagePolicy();
+            languagePolicy = languagePolicy ?? new LanguagePolicy();
 
             if (languagePolicy.ContainsKey(locale))
             {
@@ -142,8 +143,9 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// result will be :en -> [1.en.lg, 2.lg]. and use fallback to find the resources.
         /// </summary>
         /// <param name="resourceMapping">input resource mapping.</param>
+        /// <param name="languagePolicy">language policy.</param>
         /// <returns>merged resource mapping.</returns>
-        private static Dictionary<string, IList<Resource>> FallbackMultiLangResource(Dictionary<string, IList<Resource>> resourceMapping)
+        private static Dictionary<string, IList<Resource>> FallbackMultiLangResource(Dictionary<string, IList<Resource>> resourceMapping, LanguagePolicy languagePolicy)
         {
             var resourcePoolDict = new Dictionary<string, IList<Resource>>();
             foreach (var languageItem in resourceMapping)
@@ -159,7 +161,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 }
                 else
                 {
-                    var newLocale = FindCommonAncestorLocale(existLocale, currentLocale);
+                    var newLocale = FindCommonAncestorLocale(existLocale, currentLocale, languagePolicy);
                     if (!string.IsNullOrWhiteSpace(newLocale) && newLocale != existLocale)
                     {
                         resourcePoolDict.Remove(existLocale);
@@ -178,10 +180,11 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// </summary>
         /// <param name="locale1">first locale.</param>
         /// <param name="locale2">second locale.</param>
+        /// <param name="policy">language policy.</param>
         /// <returns>the most closest common ancestor local.</returns>
-        private static string FindCommonAncestorLocale(string locale1, string locale2)
+        private static string FindCommonAncestorLocale(string locale1, string locale2, LanguagePolicy policy)
         {
-            var policy = new LanguagePolicy();
+            policy = policy ?? new LanguagePolicy();
             if (!policy.ContainsKey(locale1) || !policy.ContainsKey(locale2))
             {
                 return string.Empty;
