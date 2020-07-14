@@ -49,15 +49,17 @@ namespace Microsoft.Bot.Connector.Authentication
         /// Gets a value of whether this provider represents a channel on US Government Azure.
         /// </summary>
         /// <returns>True if this channel provider represents a channel on US Government Azure.</returns>
+        [Obsolete("Use CloudEnvironment instead to determine constants for a channel provider")]
         public bool IsGovernment()
         {
-            return string.Equals(GovernmentAuthenticationConstants.ChannelService, ChannelService, StringComparison.OrdinalIgnoreCase);
+            return CloudEnvironment.GetCloudEnvironment(ChannelService).IsGovernment;
         }
 
         /// <summary>
         /// Gets a value of whether this provider represents a channel on Public Azure.
         /// </summary>
         /// <returns>True if this channel provider represents a channel on Public Azure.</returns>
+        [Obsolete("Use CloudEnvironment instead to determine constants for a channel provider")]
         public bool IsPublicAzure()
         {
             return string.IsNullOrEmpty(ChannelService);

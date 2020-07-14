@@ -242,7 +242,9 @@ namespace Microsoft.Bot.Connector.Authentication
                 return await EmulatorValidation.AuthenticateEmulatorToken(authHeader, credentials, channelProvider, httpClient, channelId, authConfig).ConfigureAwait(false);
             }
 
-            if (channelProvider == null || channelProvider.IsPublicAzure())
+            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(channelProvider).ConfigureAwait(false);
+
+            if (cloudEnvironment == CloudEnvironment.PublicCloud)
             {
                 // No empty or null check. Empty can point to issues. Null checks only.
                 if (serviceUrl != null)
@@ -253,9 +255,9 @@ namespace Microsoft.Bot.Connector.Authentication
                 return await ChannelValidation.AuthenticateChannelToken(authHeader, credentials, httpClient, channelId, authConfig).ConfigureAwait(false);
             }
 
-            if (channelProvider.IsGovernment())
+            if (cloudEnvironment.IsGovernment)
             {
-                return await GovernmentChannelValidation.AuthenticateChannelToken(authHeader, credentials, serviceUrl, httpClient, channelId, authConfig).ConfigureAwait(false);
+                return await GovernmentChannelValidation.AuthenticateChannelToken(authHeader, credentials, serviceUrl, httpClient, channelId, authConfig, cloudEnvironment).ConfigureAwait(false);
             }
 
             return await EnterpriseChannelValidation.AuthenticateChannelToken(authHeader, credentials, channelProvider, serviceUrl, httpClient, channelId, authConfig).ConfigureAwait(false);

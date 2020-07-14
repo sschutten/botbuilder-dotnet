@@ -26,7 +26,7 @@ namespace Microsoft.Bot.Schema
         /// <summary>
         ///  The caller ID for any Bot Framework US Sec Government cloud channel.
         /// </summary>
-        public const string USSetChannel = "urn:botframework:azureussec";
+        public const string USSecChannel = "urn:botframework:azureussec";
 
         /// <summary>
         /// The caller ID prefix when a bot initiates a request to another bot.

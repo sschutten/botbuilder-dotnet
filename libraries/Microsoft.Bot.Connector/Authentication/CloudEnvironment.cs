@@ -18,6 +18,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         public static CloudEnvironment PublicCloud = new CloudEnvironment(
             string.Empty,
+            false,
             AuthenticationConstants.ToChannelFromBotLoginUrl,
             AuthenticationConstants.ToChannelFromBotOAuthScope,
             AuthenticationConstants.ToBotFromChannelTokenIssuer,
@@ -31,6 +32,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         public static CloudEnvironment UsGovernment = new CloudEnvironment(
             GovernmentAuthenticationConstants.ChannelService,
+            true,
             GovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
             GovernmentAuthenticationConstants.ToChannelFromBotOAuthScope,
             GovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer,
@@ -44,6 +46,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         public static CloudEnvironment UsNatGovernment = new CloudEnvironment(
             UsNatGovernmentAuthenticationConstants.ChannelService,
+            true,
             UsNatGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
             UsNatGovernmentAuthenticationConstants.ToChannelFromBotOAuthScope,
             UsNatGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer,
@@ -57,6 +60,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         public static CloudEnvironment UsSecGovernment = new CloudEnvironment(
             UsSecGovernmentAuthenticationConstants.ChannelService,
+            true,
             UsSecGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
             UsSecGovernmentAuthenticationConstants.ToChannelFromBotOAuthScope,
             UsSecGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer,
@@ -67,6 +71,7 @@ namespace Microsoft.Bot.Connector.Authentication
 
         private CloudEnvironment(
             string channelService,
+            bool isGovernment,
             string toChannelFromBotLoginUrl,
             string toChannelFromBotOAuthScope,
             string toBotFromChannelTokenIssuer,
@@ -76,6 +81,7 @@ namespace Microsoft.Bot.Connector.Authentication
             string callerId)
         {
             ChannelService = channelService;
+            IsGovernment = isGovernment;
             ToChannelFromBotLoginUrl = toChannelFromBotLoginUrl;
             ToChannelFromBotOAuthScope = toChannelFromBotOAuthScope;
             ToBotFromChannelTokenIssuer = toBotFromChannelTokenIssuer;
@@ -89,6 +95,11 @@ namespace Microsoft.Bot.Connector.Authentication
         /// The channel service for the cloud.
         /// </summary>
         public string ChannelService { get; private set; }
+
+        /// <summary>
+        /// The where this cloud environment is a government cloud.
+        /// </summary>
+        public bool IsGovernment { get; private set; }
 
         /// <summary>
         /// The channel service for the cloud.

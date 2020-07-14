@@ -43,7 +43,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
                 if (!string.IsNullOrEmpty(openIdEndpoint))
                 {
                     ChannelValidation.OpenIdMetadataUrl = openIdEndpoint;
-                    GovernmentChannelValidation.OpenIdMetadataUrl = openIdEndpoint;
+                    GovernmentChannelValidation.SetOpenIdMetadataUrl(openIdEndpoint);
                 }
 
                 var oauthApiEndpoint = configuration.GetSection(AuthenticationConstants.OAuthUrlKey)?.Value;

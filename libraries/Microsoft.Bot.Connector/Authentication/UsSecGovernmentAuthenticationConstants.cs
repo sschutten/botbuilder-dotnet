@@ -11,36 +11,36 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// Government Channel Service property value.
         /// </summary>
-        public const string ChannelService = "https://botframework.azure.scloud";
+        public const string ChannelService = "https://botframework.microsoft.scloud";
 
         /// <summary>
         /// TO GOVERNMENT CHANNEL FROM BOT: Login URL.
         /// </summary>
-        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.us/MicrosoftServices.onmicrosoft.scloud";
+        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.microsoft.scloud/MicrosoftServices.onmicrosoft.scloud";
 
         /// <summary>
         /// TO GOVERNMENT CHANNEL FROM BOT: OAuth scope to request.
         /// </summary>
-        public const string ToChannelFromBotOAuthScope = "https://api.botframework.scloud";
+        public const string ToChannelFromBotOAuthScope = "https://api.botframework.microsoft.scloud";
 
         /// <summary>
         /// TO BOT FROM GOVERNMENT CHANNEL: Token issuer.
         /// </summary>
-        public const string ToBotFromChannelTokenIssuer = "https://api.botframework.scloud";
+        public const string ToBotFromChannelTokenIssuer = "https://api.botframework.microsoft.scloud";
 
         /// <summary>
         /// OAuth Url used to get a token from OAuthApiClient.
         /// </summary>
-        public const string OAuthUrlGov = "https://api.botframework.azure.scloud";
+        public const string OAuthUrlGov = "https://botframework.microsoft.scloud";
 
         /// <summary>
         /// TO BOT FROM GOVERNMANT CHANNEL: OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public const string ToBotFromChannelOpenIdMetadataUrl = "https://login.botframework.azure.scloud/v1/.well-known/openidconfiguration";
+        public const string ToBotFromChannelOpenIdMetadataUrl = "https://login.botframework.microsoft.scloud/v1/.well-known/openidconfiguration";
 
         /// <summary>
         /// TO BOT FROM GOVERNMENT EMULATOR: OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.scloud/cab8a31a-1906-4287-a0d8-4eef66b95f6e/v2.0/.well-known/openid-configuration";
+        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.microsoft.scloud/cab8a31a-1906-4287-a0d8-4eef66b95f6e/v2.0/.well-known/openid-configuration";
     }
 }

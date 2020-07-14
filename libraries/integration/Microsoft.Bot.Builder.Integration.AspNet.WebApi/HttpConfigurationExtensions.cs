@@ -105,7 +105,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.WebApi
             if (!string.IsNullOrEmpty(openIdEndpoint))
             {
                 ChannelValidation.OpenIdMetadataUrl = openIdEndpoint;
-                GovernmentChannelValidation.OpenIdMetadataUrl = openIdEndpoint;
+                GovernmentChannelValidation.SetOpenIdMetadataUrl(openIdEndpoint);
             }
 
             var oauthApiEndpoint = ConfigurationManager.AppSettings[AuthenticationConstants.OAuthUrlKey];

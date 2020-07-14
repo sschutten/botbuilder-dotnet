@@ -33,6 +33,41 @@ namespace Microsoft.Bot.Connector.Authentication
             };
 
         /// <summary>
+        /// TO BOT FROM USNAT GOVERNMENT CHANNEL: Token validation parameters when connecting to a bot.
+        /// </summary>
+        public static readonly TokenValidationParameters ToBotFromUsNatGovernmentChannelTokenValidationParameters =
+            new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidIssuers = new[] { UsNatGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer },
+
+                // Audience validation takes place in JwtTokenExtractor
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(5),
+                RequireSignedTokens = true,
+                ValidateIssuerSigningKey = true,
+            };
+
+
+        /// <summary>
+        /// TO BOT FROM USSEC GOVERNMENT CHANNEL: Token validation parameters when connecting to a bot.
+        /// </summary>
+        public static readonly TokenValidationParameters ToBotFromUsSecGovernmentChannelTokenValidationParameters =
+            new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidIssuers = new[] { UsSecGovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer },
+
+                // Audience validation takes place in JwtTokenExtractor
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(5),
+                RequireSignedTokens = true,
+                ValidateIssuerSigningKey = true,
+            };
+
+        /// <summary>
         /// Gets or sets the metadata address.
         /// </summary>
         /// <value>
@@ -41,6 +76,10 @@ namespace Microsoft.Bot.Connector.Authentication
 #pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
         public static string OpenIdMetadataUrl { get; set; } = GovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl;
 #pragma warning restore CA1056 // Uri properties should not be strings
+
+        public static Uri UsNatOpenIdMetadataUrl { get; set; } = new Uri(UsNatGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl);
+
+        public static Uri UsSecOpenIdMetadataUrl { get; set; } = new Uri(UsSecGovernmentAuthenticationConstants.ToBotFromChannelOpenIdMetadataUrl);
 
         /// <summary>
         /// Validate the incoming Auth Header as a token sent from a Bot Framework Government Channel Service.
@@ -73,7 +112,27 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <param name="authConfig">The authentication configuration.</param>
         /// <returns>ClaimsIdentity.</returns>
 #pragma warning disable UseAsyncSuffix // Use Async suffix (can't change this without breaking binary compat)
-        public static async Task<ClaimsIdentity> AuthenticateChannelToken(string authHeader, ICredentialProvider credentials, string serviceUrl, HttpClient httpClient, string channelId, AuthenticationConfiguration authConfig)
+        public static Task<ClaimsIdentity> AuthenticateChannelToken(string authHeader, ICredentialProvider credentials, string serviceUrl, HttpClient httpClient, string channelId, AuthenticationConfiguration authConfig)
+#pragma warning restore UseAsyncSuffix // Use Async suffix
+        {
+            return AuthenticateChannelToken(authHeader, credentials, serviceUrl, httpClient, channelId, authConfig, CloudEnvironment.UsGovernment);
+        }
+
+        /// <summary>
+        /// Validate the incoming Auth Header as a token sent from a Bot Framework Government Channel Service.
+        /// </summary>
+        /// <param name="authHeader">The raw HTTP header in the format: "Bearer [longString]".</param>
+        /// <param name="credentials">The user defined set of valid credentials, such as the AppId.</param>
+        /// <param name="serviceUrl">The service url from the request.</param>
+        /// <param name="httpClient">Authentication of tokens requires calling out to validate Endorsements and related documents. The
+        /// HttpClient is used for making those calls. Those calls generally require TLS connections, which are expensive to
+        /// setup and teardown, so a shared HttpClient is recommended.</param>
+        /// <param name="channelId">The ID of the channel to validate.</param>
+        /// <param name="authConfig">The authentication configuration.</param>
+        /// <param name="cloudEnvironment">The cloud environment.</param>
+        /// <returns>ClaimsIdentity.</returns>
+#pragma warning disable UseAsyncSuffix // Use Async suffix (can't change this without breaking binary compat)
+        public static async Task<ClaimsIdentity> AuthenticateChannelToken(string authHeader, ICredentialProvider credentials, string serviceUrl, HttpClient httpClient, string channelId, AuthenticationConfiguration authConfig, CloudEnvironment cloudEnvironment)
 #pragma warning restore UseAsyncSuffix // Use Async suffix
         {
             if (authConfig == null)
@@ -81,10 +140,33 @@ namespace Microsoft.Bot.Connector.Authentication
                 throw new ArgumentNullException(nameof(authConfig));
             }
 
+            TokenValidationParameters tokenValidationParameters = null;
+            string openIdMetadataUrl = null;
+
+            if (cloudEnvironment == CloudEnvironment.UsGovernment)
+            {
+                tokenValidationParameters = ToBotFromGovernmentChannelTokenValidationParameters;
+                openIdMetadataUrl = OpenIdMetadataUrl;
+            }
+            else if (cloudEnvironment == CloudEnvironment.UsNatGovernment)
+            {
+                tokenValidationParameters = ToBotFromUsNatGovernmentChannelTokenValidationParameters;
+                openIdMetadataUrl = UsNatOpenIdMetadataUrl.OriginalString;
+            }
+            else if (cloudEnvironment == CloudEnvironment.UsSecGovernment)
+            {
+                tokenValidationParameters = ToBotFromUsSecGovernmentChannelTokenValidationParameters;
+                openIdMetadataUrl = UsSecOpenIdMetadataUrl.OriginalString;
+            }
+            else
+            {
+                throw new ArgumentException(nameof(CloudEnvironment));
+            }
+
             var tokenExtractor = new JwtTokenExtractor(
                 httpClient,
-                ToBotFromGovernmentChannelTokenValidationParameters,
-                OpenIdMetadataUrl,
+                tokenValidationParameters,
+                openIdMetadataUrl,
                 AuthenticationConstants.AllowedSigningAlgorithms);
 
             var identity = await tokenExtractor.GetIdentityAsync(authHeader, channelId, authConfig.RequiredEndorsements).ConfigureAwait(false);
@@ -162,6 +244,17 @@ namespace Microsoft.Bot.Connector.Authentication
                     throw new UnauthorizedAccessException();
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the Open Id Metadata URL for all gov clouds.
+        /// </summary>
+        /// <param name="url">The open id metadata url.</param>
+        public static void SetOpenIdMetadataUrl(string url)
+        {
+            OpenIdMetadataUrl = url;
+            UsNatOpenIdMetadataUrl = new Uri(url);
+            UsSecOpenIdMetadataUrl = new Uri(url);
         }
     }
 }

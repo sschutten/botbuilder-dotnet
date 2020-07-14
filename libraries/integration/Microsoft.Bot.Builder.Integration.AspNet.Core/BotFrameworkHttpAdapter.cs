@@ -109,7 +109,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core
             {
                 // Indicate which Cloud we are using, for example, Public or Sovereign.
                 ChannelValidation.OpenIdMetadataUrl = openIdEndpoint;
-                GovernmentChannelValidation.OpenIdMetadataUrl = openIdEndpoint;
+                GovernmentChannelValidation.SetOpenIdMetadataUrl(openIdEndpoint);
             }
         }
 
