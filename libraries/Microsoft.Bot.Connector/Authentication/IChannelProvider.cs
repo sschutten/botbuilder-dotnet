@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.Bot.Connector.Authentication
@@ -22,12 +23,14 @@ namespace Microsoft.Bot.Connector.Authentication
         /// Gets a value of whether this provider represents a channel on Government Azure.
         /// </summary>
         /// <returns>True if this channel provider represents a channel on Government Azure.</returns>
+        [Obsolete("Use CloudEnvironment instead to determine constants for a channel provider")]
         bool IsGovernment();
 
         /// <summary>
         /// Gets a value of whether this provider represents a channel on Public Azure.
         /// </summary>
         /// <returns>True if this channel provider represents a channel on Public Azure.</returns>
+        [Obsolete("Use CloudEnvironment instead to determine constants for a channel provider")]
         bool IsPublicAzure();
     }
 }

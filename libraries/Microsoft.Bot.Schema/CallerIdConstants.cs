@@ -19,6 +19,16 @@ namespace Microsoft.Bot.Schema
         public const string USGovChannel = "urn:botframework:azureusgov";
 
         /// <summary>
+        ///  The caller ID for any Bot Framework US Nat Government cloud channel.
+        /// </summary>
+        public const string USNatChannel = "urn:botframework:azureusnat";
+
+        /// <summary>
+        ///  The caller ID for any Bot Framework US Sec Government cloud channel.
+        /// </summary>
+        public const string USSetChannel = "urn:botframework:azureussec";
+
+        /// <summary>
         /// The caller ID prefix when a bot initiates a request to another bot.
         /// </summary>
         /// <remarks>

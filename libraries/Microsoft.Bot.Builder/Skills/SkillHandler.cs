@@ -168,10 +168,11 @@ namespace Microsoft.Bot.Builder.Skills
 #pragma warning disable 618
                 var conversationReference = await _conversationIdFactory.GetConversationReferenceAsync(conversationId, cancellationToken).ConfigureAwait(false);
 #pragma warning restore 618
+                var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(ChannelProvider).ConfigureAwait(false);
                 skillConversationReference = new SkillConversationReference
                 {
                     ConversationReference = conversationReference,
-                    OAuthScope = ChannelProvider != null && ChannelProvider.IsGovernment() ? GovernmentAuthenticationConstants.ToChannelFromBotOAuthScope : AuthenticationConstants.ToChannelFromBotOAuthScope
+                    OAuthScope = cloudEnvironment.ToChannelFromBotOAuthScope
                 };
             }
 

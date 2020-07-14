@@ -129,7 +129,7 @@ namespace Microsoft.Bot.Builder.Streaming
                     context.TurnState.Add<IIdentity>(BotIdentityKey, ClaimsIdentity);
                 }
 
-                var connectorClient = CreateStreamingConnectorClient(activity, requestHandler);
+                var connectorClient = await CreateStreamingConnectorClient(activity, requestHandler).ConfigureAwait(false);
                 context.TurnState.Add(connectorClient);
 
                 await RunPipelineAsync(context, callbackHandler, cancellationToken).ConfigureAwait(false);
@@ -284,11 +284,9 @@ namespace Microsoft.Bot.Builder.Streaming
         /// <summary>
         /// Creates a streaming specific connector client.
         /// </summary>
-        private IConnectorClient CreateStreamingConnectorClient(Activity activity, StreamingRequestHandler requestHandler)
+        private async Task<IConnectorClient> CreateStreamingConnectorClient(Activity activity, StreamingRequestHandler requestHandler)
         {
-            var emptyCredentials = (ChannelProvider != null && ChannelProvider.IsGovernment()) ?
-                    MicrosoftGovernmentAppCredentials.Empty :
-                    MicrosoftAppCredentials.Empty;
+            var emptyCredentials = await CloudEnvironment.GetEmptyCredential(ChannelProvider).ConfigureAwait(false);
 #pragma warning disable CA2000 // Dispose objects before losing scope (We need to make ConnectorClient disposable to fix this, ignoring it for now)
             var streamingClient = new StreamingHttpClient(requestHandler, Logger);
 #pragma warning restore CA2000 // Dispose objects before losing scope
