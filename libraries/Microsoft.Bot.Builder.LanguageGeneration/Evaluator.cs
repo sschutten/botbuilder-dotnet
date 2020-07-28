@@ -144,21 +144,21 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 if (isKVPairBody)
                 {
                     // make it insensitive
-                    var property = body.keyValueStructureLine().STRUCTURE_IDENTIFIER().GetText().ToLower();
+                    var property = body.keyValueStructureLine().STRUCTURE_IDENTIFIER().GetText().ToLowerInvariant();
                     var value = VisitStructureValue(body.keyValueStructureLine());
                     result[property] = JToken.FromObject(value);
                 }
                 else
                 {
                     // When the same property exists in both the calling template as well as callee, the content in caller will trump any content in 
-                    var propertyObject = JObject.FromObject(EvalExpression(body.expressionInStructure().GetText(), body.expressionInStructure(), body.GetText()));
+                    var propertyObject = JObject.FromObject(EvalExpression(body.expressionInStructure().GetText(), body.GetText()));
 
                     // Full reference to another structured template is limited to the structured template with same type 
                     if (propertyObject[LGType] != null && propertyObject[LGType].ToString() == typeName)
                     {
                         foreach (var item in propertyObject)
                         {
-                            if (result.Property(item.Key) == null)
+                            if (result.Property(item.Key, StringComparison.Ordinal) == null)
                             {
                                 result[item.Key] = item.Value;
                             }
@@ -199,7 +199,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             var length = switchCaseNodes.Length;
             var switchExprs = switchCaseNodes[0].switchCaseStat().expression();
             var switchErrorPrefix = "Switch '" + switchExprs[0].GetText() + "': ";
-            var switchExprResult = EvalExpression(switchExprs[0].GetText(), switchExprs[0], switchCaseNodes[0].switchCaseStat().GetText(), switchErrorPrefix).ToString();
+            var switchExprResult = EvalExpression(switchExprs[0].GetText(), switchCaseNodes[0].switchCaseStat().GetText(), switchErrorPrefix).ToString();
             var idx = 0;
             foreach (var switchCaseNode in switchCaseNodes)
             {
@@ -225,7 +225,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 var caseExprs = switchCaseNode.switchCaseStat().expression();
 
                 var caseErrorPrefix = "Case '" + caseExprs[0].GetText() + "': ";
-                var caseExprResult = EvalExpression(caseExprs[0].GetText(), caseExprs[0], switchCaseNode.switchCaseStat().GetText(), caseErrorPrefix).ToString();
+                var caseExprResult = EvalExpression(caseExprs[0].GetText(), switchCaseNode.switchCaseStat().GetText(), caseErrorPrefix).ToString();
                 if (switchExprResult == caseExprResult)
                 {
                     return Visit(switchCaseNode.normalTemplateBody());
@@ -245,7 +245,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             {
                 if (child is LGTemplateParser.ExpressionContext expression)
                 {
-                    result.Add(EvalExpression(expression.GetText(), expression, context.GetText(), prefixErrorMsg));
+                    result.Add(EvalExpression(expression.GetText(), context.GetText(), prefixErrorMsg));
                 }
                 else
                 {
@@ -355,7 +355,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             {
                 if (item.IsPureExpression())
                 {
-                    result.Add(EvalExpression(item.expressionInStructure(0).GetText(), item.expressionInStructure(0), context.GetText()));
+                    result.Add(EvalExpression(item.expressionInStructure(0).GetText(), context.GetText()));
                 }
                 else
                 {
@@ -365,7 +365,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                         if (child is LGTemplateParser.ExpressionInStructureContext expression)
                         {
                             var errorPrefix = "Property '" + context.STRUCTURE_IDENTIFIER().GetText() + "':";
-                            itemStringResult.Append(EvalExpression(expression.GetText(), expression, context.GetText(), errorPrefix));
+                            itemStringResult.Append(EvalExpression(expression.GetText(), context.GetText(), errorPrefix));
                         }
                         else
                         {
@@ -426,7 +426,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             return true;
         }
 
-        private object EvalExpression(string exp, ParserRuleContext expressionContext = null, string lineContent = "", string errorPrefix = "")
+        private object EvalExpression(string exp, string lineContent = "", string errorPrefix = "")
         {
             exp = exp.TrimExpression();
             var (result, error) = EvalByAdaptiveExpression(exp, CurrentTarget().Scope, expressionContext);
@@ -512,7 +512,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 return standardFunction;
             }
 
-            if (name.StartsWith("lg."))
+            if (name.StartsWith("lg.", StringComparison.Ordinal))
             {
                 name = name.Substring(3);
             }
@@ -526,21 +526,21 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             const string template = "template";
 
-            if (name.Equals(template))
+            if (name.Equals(template, StringComparison.Ordinal))
             {
                 return new ExpressionEvaluator(template, FunctionUtils.Apply(this.TemplateFunction()), ReturnType.Object, this.ValidateTemplateFunction);
             }
 
             const string fromFile = "fromFile";
 
-            if (name.Equals(fromFile))
+            if (name.Equals(fromFile, StringComparison.Ordinal))
             {
                 return new ExpressionEvaluator(fromFile, FunctionUtils.Apply(this.FromFile()), ReturnType.String, FunctionUtils.ValidateUnaryString);
             }
 
             const string activityAttachment = "ActivityAttachment";
 
-            if (name.Equals(activityAttachment))
+            if (name.Equals(activityAttachment, StringComparison.Ordinal))
             {
                 return new ExpressionEvaluator(
                     activityAttachment,
@@ -551,14 +551,14 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             const string isTemplate = "isTemplate";
 
-            if (name.Equals(isTemplate))
+            if (name.Equals(isTemplate, StringComparison.Ordinal))
             {
                 return new ExpressionEvaluator(isTemplate, FunctionUtils.Apply(this.IsTemplate()), ReturnType.Boolean, FunctionUtils.ValidateUnaryString);
             }
 
             const string expandText = "expandText";
 
-            if (name.Equals(expandText))
+            if (name.Equals(expandText, StringComparison.Ordinal))
             {
                 return new ExpressionEvaluator(expandText, FunctionUtils.Apply(this.ExpandText()), ReturnType.Object, FunctionUtils.ValidateUnaryString);
             }
@@ -679,7 +679,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 throw new Exception(TemplateErrors.TemplateNotExist(templateName));
             }
 
-            var expectedArgsCount = this.TemplateMap[templateName].Parameters.Count();
+            var expectedArgsCount = this.TemplateMap[templateName].Parameters.Count;
             var actualArgsCount = children.Count();
 
             if (actualArgsCount != 0 && expectedArgsCount != actualArgsCount)
@@ -695,7 +695,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 throw new ArgumentException("template name is null.");
             }
 
-            return templateName.EndsWith(ReExecuteSuffix) ?
+            return templateName.EndsWith(ReExecuteSuffix, StringComparison.Ordinal) ?
                 (true, templateName.Substring(0, templateName.Length - ReExecuteSuffix.Length))
                 : (false, templateName);
         }
