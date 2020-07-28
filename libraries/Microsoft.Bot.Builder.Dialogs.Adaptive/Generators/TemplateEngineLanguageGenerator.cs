@@ -101,10 +101,12 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         private static void RunSync(Func<Task> func)
         {
+#pragma warning disable CA2008 // Do not create tasks without passing a TaskScheduler
             TaskFactory.StartNew(() =>
             {
                 return func();
             }).Unwrap().GetAwaiter().GetResult();
+#pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
         }
 
         private static void RegisterSourcemap(LanguageGeneration.Templates templates)

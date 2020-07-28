@@ -45,7 +45,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         {
             if (SourceRange == null)
             {
-                throw new ArgumentNullException(nameof(SourceRange));
+                throw new Exception("Source range is empty.");
             }
 
             return SourceRange.Source + ":" + SourceRange.Range + ":" + Expression;
