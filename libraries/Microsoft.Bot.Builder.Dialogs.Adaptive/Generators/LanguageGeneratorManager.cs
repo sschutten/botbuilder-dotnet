@@ -60,17 +60,15 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 var fallbackLocale = LGResourceLoader.FallbackLocale(locale, resourceMapping.Keys.ToList());
                 var resources = resourceMapping[fallbackLocale];
 
-                var resourceName = Path.GetFileName(PathUtils.NormalizePath(id));
-
-                var resource = resources.FirstOrDefault(u => LGResourceLoader.ParseLGFileName(u.Id).prefix.ToLowerInvariant() == LGResourceLoader.ParseLGFileName(resourceName).prefix.ToLowerInvariant());
+                var resource = resources.FirstOrDefault(u => LGResourceLoader.ParseLGFileName(u.Id).prefix.ToLowerInvariant() == LGResourceLoader.ParseLGFileName(id).prefix.ToLowerInvariant());
                 if (resource == null)
                 {
-                    throw new Exception($"There is no matching LG resource for {resourceName}");
+                    throw new Exception($"There is no matching LG resource for {id}");
                 }
                 else
                 {
                     var content = resource.ReadTextAsync().GetAwaiter().GetResult();
-                    return (content, resource.FullName);
+                    return (content, resource.Id);
                 }
             };
         }
@@ -86,7 +84,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         private TemplateEngineLanguageGenerator GetTemplateEngineLanguageGenerator(Resource resource)
         {
-            return new TemplateEngineLanguageGenerator(resource.FullName, multilanguageResources);
+            return new TemplateEngineLanguageGenerator(resource, multilanguageResources);
         }
     }
 }
