@@ -19,7 +19,7 @@ namespace Microsoft.Bot.Connector.Authentication
     /// </summary>
     public abstract class AppCredentials : ServiceClientCredentials
     {
-        private static readonly IDictionary<string, DateTime> TrustedHostNames = new Dictionary<string, DateTime>
+        internal static readonly IDictionary<string, DateTime> TrustedHostNames = new Dictionary<string, DateTime>
         {
             // { "state.botframework.com", DateTime.MaxValue }, // deprecated state api
             { "api.botframework.com", DateTime.MaxValue }, // bot connector API
@@ -31,7 +31,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// Authenticator abstraction used to obtain tokens through the Client Credentials OAuth 2.0 flow.
         /// </summary>
-        private Lazy<IAuthenticator> authenticator;
+        private Lazy<IAuthenticator> _authenticator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppCredentials"/> class.
@@ -75,19 +75,13 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </value>
         public string ChannelAuthTenant
         {
-            get
-            {
-                return string.IsNullOrEmpty(AuthTenant)
-                    ? AuthenticationConstants.DefaultChannelAuthTenant
-                    : AuthTenant;
-            }
-
+            get => string.IsNullOrEmpty(AuthTenant) ? AuthenticationConstants.DefaultChannelAuthTenant : AuthTenant;
             set
             {
                 // Advanced user only, see https://aka.ms/bots/tenant-restriction
                 var endpointUrl = string.Format(CultureInfo.InvariantCulture, AuthenticationConstants.ToChannelFromBotLoginUrlTemplate, value);
 
-                if (Uri.TryCreate(endpointUrl, UriKind.Absolute, out var result))
+                if (Uri.TryCreate(endpointUrl, UriKind.Absolute, out _))
                 {
                     AuthTenant = value;
                 }
@@ -166,11 +160,11 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         /// <param name="serviceUrl">The service url.</param>
         /// <returns>True if the host of the service url is trusted; False otherwise.</returns>
-        public bool IsTrustedServiceUrl(string serviceUrl)
+        public static bool IsTrustedServiceUrl(string serviceUrl)
         {
             if (Uri.TryCreate(serviceUrl, UriKind.Absolute, out var uri))
             {
-                return IsTrustedUrl(uri, Logger);
+                return IsTrustedUrl(uri, NullLogger.Instance);
             }
 
             return false;
@@ -185,9 +179,7 @@ namespace Microsoft.Bot.Connector.Authentication
         {
             if (ShouldSetToken(request, Logger))
             {
-                Logger.LogInformation($"ProcessHttpRequestAsync: getting new token for {request.RequestUri}.");
                 var token = await GetTokenAsync().ConfigureAwait(false);
-                Logger.LogInformation($"ProcessHttpRequestAsync: got token and IsEmpty() returns {string.IsNullOrWhiteSpace(token)}.");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
@@ -203,8 +195,13 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <remarks>If the task is successful, the result contains the access token string.</remarks>
         public async Task<string> GetTokenAsync(bool forceRefresh = false)
         {
-            authenticator ??= BuildIAuthenticator();
-            var token = await authenticator.Value.GetTokenAsync(forceRefresh).ConfigureAwait(false);
+            _authenticator ??= BuildIAuthenticator();
+            var token = await _authenticator.Value.GetTokenAsync(forceRefresh).ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(token.AccessToken))
+            {
+                Logger.LogWarning($"{GetType().FullName}.ProcessHttpRequestAsync(): got empty token from call to the configured IAuthenticator.");
+            }
+
             return token.AccessToken;
         }
 
@@ -241,12 +238,11 @@ namespace Microsoft.Bot.Connector.Authentication
                         return true;
                     }
 
-                    logger.LogInformation($"ERROR IsTrustedUrl: {uri} found in TrustedHostNames but it expired (Expiration is set to: {trustedServiceUrlExpiration}, current time is {DateTime.UtcNow}).");
-
+                    logger.LogWarning($"{typeof(AppCredentials).FullName}.IsTrustedUrl(): '{uri}' found in TrustedHostNames but it expired (Expiration is set to: {trustedServiceUrlExpiration}, current time is {DateTime.UtcNow}).");
                     return false;
                 }
 
-                logger.LogInformation($"ERROR IsTrustedUrl: {uri} not found in TrustedHostNames.");
+                logger.LogWarning($"{typeof(AppCredentials).FullName}.IsTrustedUrl(): '{uri}' not found in TrustedHostNames.");
                 return false;
             }
         }
@@ -255,11 +251,10 @@ namespace Microsoft.Bot.Connector.Authentication
         {
             if (IsTrustedUrl(request.RequestUri, logger))
             {
-                logger.LogInformation($"ShouldSetToken: Service url {request.RequestUri.Authority} is trusted. We can send the JwtToken cannot be sent to it.");
                 return true;
             }
-            
-            logger.LogWarning($"ERROR ShouldSetToken: {request.RequestUri.Authority} is not trusted and JwtToken cannot be sent to it.");
+
+            logger.LogWarning($"{typeof(AppCredentials).FullName}.ShouldSetToken(): '{request.RequestUri.Authority}' is not trusted and JwtToken cannot be sent to it.");
             return false;
         }
     }

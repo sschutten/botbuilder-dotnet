@@ -296,10 +296,16 @@ namespace Microsoft.Bot.Builder.Tests
 
                 var scope = turnContext.TurnState.Get<string>(BotAdapter.OAuthScopeKey);
                 Assert.AreEqual(AuthenticationConstants.ToChannelFromBotOAuthScope, scope);
+
+                // Ensure the serviceUrl was added to the trusted hosts
+                Assert.IsTrue(AppCredentials.TrustedHostNames.ContainsKey(new Uri(channelServiceUrl).Host));
             });
 
             // Create ConversationReference to send a proactive message from Skill1 to a channel
             var refs = new ConversationReference(serviceUrl: channelServiceUrl);
+
+            // Ensure the serviceUrl is NOT in the trusted hosts
+            Assert.IsFalse(AppCredentials.TrustedHostNames.ContainsKey(new Uri(channelServiceUrl).Host));
 
             await adapter.ContinueConversationAsync(skillsIdentity, refs, callback, default);
         }
@@ -351,10 +357,16 @@ namespace Microsoft.Bot.Builder.Tests
 
                 var scope = turnContext.TurnState.Get<string>(BotAdapter.OAuthScopeKey);
                 Assert.AreEqual(skill2AppId, scope);
+
+                // Ensure the serviceUrl was added to the trusted hosts
+                Assert.IsTrue(AppCredentials.TrustedHostNames.ContainsKey(new Uri(skill2ServiceUrl).Host));
             });
 
             // Create ConversationReference to send a proactive message from Skill1 to Skill2
             var refs = new ConversationReference(serviceUrl: skill2ServiceUrl);
+
+            // Ensure the serviceUrl is NOT in the trusted hosts
+            Assert.IsFalse(AppCredentials.TrustedHostNames.ContainsKey(new Uri(skill2ServiceUrl).Host));
 
             await adapter.ContinueConversationAsync(skillsIdentity, refs, skill2AppId, callback, default);
         }
