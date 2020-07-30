@@ -107,7 +107,7 @@ namespace Microsoft.Bot.Connector.Tests.Authentication
                 new SimpleChannelProvider(),
                 emptyClient);
 
-            Assert.True(microsoftAppCredentials.IsTrustedServiceUrl("https://smba.trafficmanager.net/amer-client-ss.msg/"));
+            Assert.True(AppCredentials.IsTrustedServiceUrl("https://smba.trafficmanager.net/amer-client-ss.msg/"));
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Microsoft.Bot.Connector.Tests.Authentication
                 new SimpleChannelProvider(),
                 emptyClient));
 
-            Assert.False(microsoftAppCredentials.IsTrustedServiceUrl("https://webchat.botframework.com/"));
+            Assert.False(AppCredentials.IsTrustedServiceUrl("https://webchat.botframework.com/"));
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Microsoft.Bot.Connector.Tests.Authentication
                 new SimpleChannelProvider(),
                 emptyClient);
 
-            Assert.False(microsoftAppCredentials.IsTrustedServiceUrl("https://webchat.botframework.com/"));
+            Assert.False(AppCredentials.IsTrustedServiceUrl("https://webchat.botframework.com/"));
         }
 
         [Fact]
