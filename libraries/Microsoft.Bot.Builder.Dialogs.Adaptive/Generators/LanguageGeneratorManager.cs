@@ -70,7 +70,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 else
                 {
                     var content = resource.ReadTextAsync().GetAwaiter().GetResult();
-                    return (content, resource.FullName);
+                    return (content, resource.Id);
                 }
             };
         }
