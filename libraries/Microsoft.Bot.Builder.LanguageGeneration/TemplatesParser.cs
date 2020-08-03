@@ -624,14 +624,10 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
                 var exp = expressionContext.GetText().TrimExpression();
 
-                var source = this.template.SourceRange.Source;
-                if (Path.IsPathRooted(source))
-                {
-                    var lineOffset = this.template.SourceRange.Range.Start.Line;
-                    var sourceRange = new SourceRange(expressionContext, source, lineOffset);
-                    var expressionRef = new ExpressionRef(exp, sourceRange);
-                    template.Expressions.Add(expressionRef);
-                }
+                var lineOffset = this.template.SourceRange.Range.Start.Line;
+                var sourceRange = new SourceRange(expressionContext, template.SourceRange.Source, lineOffset);
+                var expressionRef = new ExpressionRef(exp, sourceRange);
+                template.Expressions.Add(expressionRef);
             }
         }
     }

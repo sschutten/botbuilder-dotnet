@@ -582,14 +582,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
 
             if (result == null)
             {
-                if (Path.IsPathRooted(this.Id))
-                {
-                    result = Path.GetFileNameWithoutExtension(this.Id);
-                }
-                else
-                {
-                    throw new Exception("namespace is required or the id should be an absoulte path!");
-                }
+                result = Path.GetFileNameWithoutExtension(this.Id);
             }
 
             return result;

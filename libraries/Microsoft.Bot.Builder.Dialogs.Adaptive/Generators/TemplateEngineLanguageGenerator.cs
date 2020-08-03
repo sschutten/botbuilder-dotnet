@@ -50,17 +50,34 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplateEngineLanguageGenerator"/> class.
         /// </summary>
+        /// <param name="resource">LG resource.</param>
+        /// <param name="resourceMapping">template resource loader delegate (locale) -> <see cref="ImportResolverDelegate"/>.</param>
+        public TemplateEngineLanguageGenerator(Resource resource, Dictionary<string, IList<Resource>> resourceMapping)
+        {
+            this.Id = resource.Id;
+
+            var (_, locale) = LGResourceLoader.ParseLGFileName(resource.Id);
+            var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
+            var content = resource.ReadTextAsync().GetAwaiter().GetResult();
+            this.lg = LanguageGeneration.Templates.ParseText(content, resource.Id, importResolver);
+            RegisterSourcemap(lg, resource);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TemplateEngineLanguageGenerator"/> class.
+        /// This function would be deprecated. Please use <see cref="Resource"/> as the first parameter instead.
+        /// </summary>
         /// <param name="filePath">lg template file absolute path.</param>
         /// <param name="resourceMapping">template resource loader delegate (locale) -> <see cref="ImportResolverDelegate"/>.</param>
         public TemplateEngineLanguageGenerator(string filePath, Dictionary<string, IList<Resource>> resourceMapping)
         {
             filePath = PathUtils.NormalizePath(filePath);
-            this.Id = filePath;
+            this.Id = Path.GetFileName(filePath);
 
-            var (_, locale) = LGResourceLoader.ParseLGFileName(Path.GetFileName(filePath));
+            var (_, locale) = LGResourceLoader.ParseLGFileName(Id);
             var importResolver = LanguageGeneratorManager.ResourceExplorerResolver(locale, resourceMapping);
-            this.lg = LanguageGeneration.Templates.ParseFile(filePath, importResolver);
-            RegisterSourcemap(lg);
+            var content = File.ReadAllText(filePath);
+            this.lg = LanguageGeneration.Templates.ParseText(content, Id, importResolver);
         }
 
         /// <summary>
@@ -109,24 +126,24 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 #pragma warning restore CA2008 // Do not create tasks without passing a TaskScheduler
         }
 
-        private static void RegisterSourcemap(LanguageGeneration.Templates templates)
+        private static void RegisterSourcemap(LanguageGeneration.Templates templates, Resource resource)
         {
-            foreach (var template in templates.AllTemplates)
+            foreach (var template in templates)
             {
-                RegisterSourcemap(template, template.SourceRange);
+                RegisterSourcemap(template, template.SourceRange, resource.FullName);
                 foreach (var expressionRef in template.Expressions)
                 {
-                    RegisterSourcemap(expressionRef, expressionRef.SourceRange);
+                    RegisterSourcemap(expressionRef, expressionRef.SourceRange, resource.FullName);
                 }
             }
         }
 
-        private static void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr)
+        private static void RegisterSourcemap(object item, LanguageGeneration.SourceRange sr, string path)
         {
-            if (Path.IsPathRooted(sr.Source))
+            if (Path.IsPathRooted(path))
             {
                 var debugSM = new Debugging.SourceRange(
-                    sr.Source,
+                    path,
                     sr.Range.Start.Line,
                     sr.Range.Start.Character + 1,
                     sr.Range.End.Line,
@@ -142,7 +159,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         private async Task HandlerLGEventAsync(DialogContext dialogContext, object sender, EventArgs eventArgs, CancellationToken cancellationToken = default)
         {
             // skip the events that is not LG event or the event path is invalid.
-            if (!(eventArgs is LGEventArgs lgEventArgs) || !Path.IsPathRooted(lgEventArgs.Source))
+            if (!(eventArgs is LGEventArgs))
             {
                 await Task.CompletedTask.ConfigureAwait(false);
             }

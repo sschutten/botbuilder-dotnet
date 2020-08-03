@@ -108,12 +108,8 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             // Using a stack to track the evaluation trace
             evaluationTargetStack.Push(templateTarget);
             currentTemplate = CurrentTemplate();
-            var source = currentTemplate.SourceRange.Source;
 
-            if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
-            {
-                lgOptions.OnEvent(currentTemplate, new BeginTemplateEvaluationArgs { Source = source, TemplateName = templateName });
-            }
+            lgOptions.OnEvent?.Invoke(currentTemplate, new BeginTemplateEvaluationArgs { Source = currentTemplate.SourceRange.Source, TemplateName = templateName });
 
             var result = Visit(currentTemplate.TemplateBodyParseTree);
             if (previousEvaluateTarget != null)
@@ -121,10 +117,10 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 previousEvaluateTarget.EvaluatedChildren[currentEvaluateId] = result;
             }
 
-            if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
+            if (lgOptions.OnEvent != null)
             {
                 var text = $"Evaluate template [{templateName}] get result: {result}";
-                lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = source, Text = text });
+                lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = currentTemplate.SourceRange.Source, Text = text });
             }
 
             evaluationTargetStack.Pop();
@@ -459,7 +455,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             if (currentTemplate != null)
             {
                 var source = currentTemplate.SourceRange.Source;
-                if (Path.IsPathRooted(source) && expressionContext != null && lgOptions.OnEvent != null)
+                if (expressionContext != null && lgOptions.OnEvent != null)
                 {
                     var lineOffset = currentTemplate.SourceRange.Range.Start.Line;
                     var sourceRange = new SourceRange(expressionContext, source, lineOffset);
@@ -478,24 +474,19 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             opt.NullSubstitution = lgOptions.NullSubstitution;
             var result = parse.TryEvaluate(scope, opt);
 
-            if (currentTemplate != null)
+            if (currentTemplate != null && lgOptions.OnEvent != null)
             {
-                var source = currentTemplate.SourceRange.Source;
-
-                if (Path.IsPathRooted(source) && lgOptions.OnEvent != null)
+                string text;
+                if (string.IsNullOrEmpty(result.error))
                 {
-                    string text;
-                    if (string.IsNullOrEmpty(result.error))
-                    {
-                        text = $"Evaluate expression '{exp}' get result: {result.value}";
-                    }
-                    else
-                    {
-                        text = $"Evaluate expression '{exp}' get error: {result.error}";
-                    }
+                    text = $"Evaluate expression '{exp}' get result: {result.value}";
+                }
+                else
+                {
+                    text = $"Evaluate expression '{exp}' get error: {result.error}";
+                }
 
-                    lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = source, Text = text });
-                    }
+                lgOptions.OnEvent(currentTemplate, new MessageArgs { Source = currentTemplate.SourceRange.Source, Text = text });
             }
 
             return result;
