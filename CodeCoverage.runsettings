@@ -16,6 +16,7 @@
                 <ModulePath>.*\Microsoft.Bot.Builder.Teams.dll$</ModulePath>               
                 <ModulePath>.*\Microsoft.Bot.Builder.AI.Luis.dll$</ModulePath>
                 <ModulePath>.*\Microsoft.Bot.Builder.AI.QnA.dll$</ModulePath>
+                <ModulePath>.*\Microsoft.Bot.Builder.AI.Orchestrator.dll$</ModulePath>
                 <ModulePath>.*\Microsoft.Bot.Builder.ApplicationInsights.dll$</ModulePath>
                 <ModulePath>.*\Microsoft.Bot.Builder.Azure.dll$</ModulePath>
                 <ModulePath>.*\Microsoft.Bot.Builder.Configuration.dll$</ModulePath>
