@@ -23,7 +23,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
     /// <summary>
     /// Class that represents an adaptive Orchestrator recognizer.
     /// </summary>
-    public class OrchestratorAdaptiveRecognizer : Recognizer, IDisposable
+    public class OrchestratorAdaptiveRecognizer : Recognizer
     {
         /// <summary>
         /// The Kind name for this recognizer.
@@ -37,26 +37,30 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         public const string ResultProperty = "result";
 
         private const float UnknownIntentFilterScore = 0.4F;
-        private Microsoft.Orchestrator.Orchestrator _orchestrator;
+        private static Microsoft.Orchestrator.Orchestrator orchestrator;
         private string _modelPath;
         private string _snapshotPath;
         private ILabelResolver _resolver;
-        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
         /// </summary>
-        /// <param name="orchestrator">Orchestrator.</param>
-        /// <param name="resolver">Label resolver.</param>
-        /// <param name="modelPath">Path to NLR model.</param>
-        /// <param name="snapshotPath">Path to snapshot.</param>
         /// <param name="callerLine">caller line.</param>
         /// <param name="callerPath">caller path.</param>
         [JsonConstructor]
-        public OrchestratorAdaptiveRecognizer(string modelPath, string snapshotPath, Microsoft.Orchestrator.Orchestrator orchestrator = null, ILabelResolver resolver = null, [CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
+        public OrchestratorAdaptiveRecognizer([CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
             : base(callerPath, callerLine)
         {
-            _orchestrator = orchestrator;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
+        /// </summary>
+        /// <param name="modelPath">Path to NLR model.</param>
+        /// <param name="snapshotPath">Path to snapshot.</param>
+        /// <param name="resolver">Label resolver.</param>
+        public OrchestratorAdaptiveRecognizer(string modelPath, string snapshotPath, ILabelResolver resolver = null)
+        {
             _resolver = resolver;
             if (modelPath == null)
             {
@@ -221,33 +225,6 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             return recognizerResult;
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose orchestrator and resolver.
-        /// </summary>
-        /// <param name="disposing">If the class is during dispose process.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _resolver?.Dispose();
-                _orchestrator?.Dispose();
-            }
-
-            _disposed = true;
-        }
-
         private async Task RecognizeEntitiesAsync(DialogContext dialogContext, Schema.Activity activity, RecognizerResult recognizerResult)
         {
             var text = activity.Text ?? string.Empty;
@@ -327,14 +304,14 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 throw new ArgumentNullException($"Missing `ShapshotPath` information.");
             }
 
-            if (_resolver == null && _orchestrator == null)
+            if (_resolver == null && orchestrator == null)
             {
                 var fullModelPath = Path.GetFullPath(PathUtils.NormalizePath(_modelPath));
 
                 // Create Orchestrator 
                 try
                 {
-                    _orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath);
+                    orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath);
                 }
                 catch (Exception ex)
                 {
@@ -351,7 +328,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 byte[] snapShotByteArray = Encoding.UTF8.GetBytes(content);
 
                 // Create label resolver
-                _resolver = _orchestrator.CreateLabelResolver(snapShotByteArray);
+                _resolver = orchestrator.CreateLabelResolver(snapShotByteArray);
             }
         }
     }
