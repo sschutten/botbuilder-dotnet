@@ -37,10 +37,10 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         public const string ResultProperty = "result";
 
         private const float UnknownIntentFilterScore = 0.4F;
-        private static Microsoft.Orchestrator.Orchestrator orchestrator;
+        private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
         private string _modelPath;
         private string _snapshotPath;
-        private ILabelResolver _resolver;
+        private ILabelResolver _resolver = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
