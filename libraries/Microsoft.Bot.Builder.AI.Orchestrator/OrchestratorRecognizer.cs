@@ -82,15 +82,15 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         /// <inheritdoc/>
         public async Task<RecognizerResult> RecognizeAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            var rec = new OrchestratorAdaptiveRecognizer()
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var rec = new OrchestratorAdaptiveRecognizer(ModelPath, SnapshotPath)
             {
                 Id = this.Id,
                 DetectAmbiguousIntents = this.DetectAmbiguousIntents,
-                ModelPath = this.ModelPath,
-                SnapshotPath = this.SnapshotPath,
                 DisambiguationScoreThreshold = this.DisambiguationScoreThreshold,
                 EntityRecognizers = this.EntityRecognizers,
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             var dc = new DialogContext(new DialogSet(), turnContext, new DialogState());
             return await rec.RecognizeAsync(dc, turnContext.Activity, cancellationToken).ConfigureAwait(false);

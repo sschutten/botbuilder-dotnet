@@ -23,7 +23,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
     /// <summary>
     /// Class that represents an adaptive Orchestrator recognizer.
     /// </summary>
-    public class OrchestratorAdaptiveRecognizer : Recognizer
+    public class OrchestratorAdaptiveRecognizer : Recognizer, IDisposable
     {
         /// <summary>
         /// The Kind name for this recognizer.
@@ -37,29 +37,27 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
         public const string ResultProperty = "result";
 
         private const float UnknownIntentFilterScore = 0.4F;
-        private static Microsoft.Orchestrator.Orchestrator orchestrator = null;
+        private Microsoft.Orchestrator.Orchestrator _orchestrator;
         private string _modelPath;
         private string _snapshotPath;
-        private ILabelResolver _resolver = null;
+        private ILabelResolver _resolver;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
         /// </summary>
+        /// <param name="orchestrator">Orchestrator.</param>
+        /// <param name="resolver">Label resolver.</param>
+        /// <param name="modelPath">Path to NLR model.</param>
+        /// <param name="snapshotPath">Path to snapshot.</param>
         /// <param name="callerLine">caller line.</param>
         /// <param name="callerPath">caller path.</param>
         [JsonConstructor]
-        public OrchestratorAdaptiveRecognizer([CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
+        public OrchestratorAdaptiveRecognizer(string modelPath, string snapshotPath, Microsoft.Orchestrator.Orchestrator orchestrator = null, ILabelResolver resolver = null, [CallerFilePath] string callerPath = "", [CallerLineNumber] int callerLine = 0)
             : base(callerPath, callerLine)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OrchestratorAdaptiveRecognizer"/> class.
-        /// </summary>
-        /// <param name="modelPath">Path to NLR model.</param>
-        /// <param name="snapshotPath">Path to snapshot.</param>
-        public OrchestratorAdaptiveRecognizer(string modelPath, string snapshotPath)
-        {
+            _orchestrator = orchestrator;
+            _resolver = resolver;
             if (modelPath == null)
             {
                 throw new ArgumentNullException($"Missing `ModelPath` information.");
@@ -205,7 +203,8 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                             });
 
                             // replace RecognizerResult with ChooseIntent => Amibgious recognizerResults as candidates. 
-                            recognizerResult = CreateChooseIntentResult(recognizerResults.ToDictionary(result => this.Id, result => result));
+                            // TODO: if the same ID is used, the code would be broken whild the result number is > 1
+                            recognizerResult = CreateChooseIntentResult(recognizerResults.ToDictionary(result => Guid.NewGuid().ToString(), result => result));
                         }
                     }
                 }
@@ -220,6 +219,33 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
             TrackRecognizerResult(dc, nameof(OrchestratorAdaptiveRecognizer), FillRecognizerResultTelemetryProperties(recognizerResult, telemetryProperties), telemetryMetrics);
 
             return recognizerResult;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose orchestrator and resolver.
+        /// </summary>
+        /// <param name="disposing">If the class is during dispose process.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _resolver?.Dispose();
+                _orchestrator?.Dispose();
+            }
+
+            _disposed = true;
         }
 
         private async Task RecognizeEntitiesAsync(DialogContext dialogContext, Schema.Activity activity, RecognizerResult recognizerResult)
@@ -301,14 +327,14 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 throw new ArgumentNullException($"Missing `ShapshotPath` information.");
             }
 
-            if (orchestrator == null)
+            if (_resolver == null && _orchestrator == null)
             {
                 var fullModelPath = Path.GetFullPath(PathUtils.NormalizePath(_modelPath));
 
                 // Create Orchestrator 
                 try
                 {
-                    orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath);
+                    _orchestrator = new Microsoft.Orchestrator.Orchestrator(fullModelPath);
                 }
                 catch (Exception ex)
                 {
@@ -325,7 +351,7 @@ namespace Microsoft.Bot.Builder.AI.Orchestrator
                 byte[] snapShotByteArray = Encoding.UTF8.GetBytes(content);
 
                 // Create label resolver
-                _resolver = orchestrator.CreateLabelResolver(snapShotByteArray);
+                _resolver = _orchestrator.CreateLabelResolver(snapShotByteArray);
             }
         }
     }
