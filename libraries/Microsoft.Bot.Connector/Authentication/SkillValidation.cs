@@ -133,7 +133,7 @@ namespace Microsoft.Bot.Connector.Authentication
                 throw new ArgumentNullException(nameof(authConfig));
             }
 
-            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(channelProvider).ConfigureAwait(false);
+            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironmentAsync(channelProvider).ConfigureAwait(false);
             var openIdMetadataUrl = cloudEnvironment.ToBotFromEmulatorOpenIdMetadataUrl;
 
             var tokenExtractor = new JwtTokenExtractor(

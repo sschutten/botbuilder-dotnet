@@ -146,7 +146,7 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core.Tests
                 { "MicrosoftAppId", "appId" },
                 { "MicrosoftAppPassword", "appPassword" },
                 { "ChannelService", "channelService" },
-                { "BotOpenIdMetadata", "botOpenIdMetadata" },
+                { "BotOpenIdMetadata", "http://tempuri.org/botOpenIdMetadata" },
             };
 
             var configuration = new ConfigurationBuilder()
@@ -168,8 +168,8 @@ namespace Microsoft.Bot.Builder.Integration.AspNet.Core.Tests
             Assert.Equal("appId", credentialProvider.AppId);
             Assert.Equal("appPassword", credentialProvider.Password);
             Assert.Equal("channelService", channelProvider.ChannelService);
-            Assert.Equal("botOpenIdMetadata", ChannelValidation.OpenIdMetadataUrl);
-            Assert.Equal("botOpenIdMetadata", GovernmentChannelValidation.OpenIdMetadataUrl);
+            Assert.Equal("http://tempuri.org/botOpenIdMetadata", ChannelValidation.OpenIdMetadataUrl);
+            Assert.Equal("http://tempuri.org/botOpenIdMetadata", GovernmentChannelValidation.OpenIdMetadataUrl);
         }
 
         [Fact]

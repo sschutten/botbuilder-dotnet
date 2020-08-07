@@ -242,7 +242,7 @@ namespace Microsoft.Bot.Connector.Authentication
                 return await EmulatorValidation.AuthenticateEmulatorToken(authHeader, credentials, channelProvider, httpClient, channelId, authConfig).ConfigureAwait(false);
             }
 
-            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(channelProvider).ConfigureAwait(false);
+            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironmentAsync(channelProvider).ConfigureAwait(false);
 
             if (cloudEnvironment == CloudEnvironment.PublicCloud)
             {

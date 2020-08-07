@@ -284,7 +284,7 @@ namespace Microsoft.Bot.Builder
                 new Claim(AuthenticationConstants.AppIdClaim, botAppId),
             });
 
-            var audience = await GetBotFrameworkOAuthScope().ConfigureAwait(false);
+            var audience = await GetBotFrameworkOAuthScopeAsync().ConfigureAwait(false);
 
             await ContinueConversationAsync(claimsIdentity, reference, audience, callback, cancellationToken).ConfigureAwait(false);
         }
@@ -311,7 +311,7 @@ namespace Microsoft.Bot.Builder
         /// <seealso cref="BotAdapter.RunPipelineAsync(ITurnContext, BotCallbackHandler, CancellationToken)"/>
         public override async Task ContinueConversationAsync(ClaimsIdentity claimsIdentity, ConversationReference reference, BotCallbackHandler callback, CancellationToken cancellationToken)
         {
-            var audience = await GetBotFrameworkOAuthScope().ConfigureAwait(false);
+            var audience = await GetBotFrameworkOAuthScopeAsync().ConfigureAwait(false);
 
             await ContinueConversationAsync(claimsIdentity, reference, audience, callback, cancellationToken).ConfigureAwait(false);
         }
@@ -445,7 +445,7 @@ namespace Microsoft.Bot.Builder
                 context.TurnState.Add<IIdentity>(BotIdentityKey, claimsIdentity);
 
                 // The OAuthScope is also stored on the TurnState to get the correct AppCredentials if fetching a token is required.
-                var scope = SkillValidation.IsSkillClaim(claimsIdentity.Claims) ? JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims) : await GetBotFrameworkOAuthScope().ConfigureAwait(false);
+                var scope = SkillValidation.IsSkillClaim(claimsIdentity.Claims) ? JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims) : await GetBotFrameworkOAuthScopeAsync().ConfigureAwait(false);
                 context.TurnState.Add(OAuthScopeKey, scope);
                 var connectorClient = await CreateConnectorClientAsync(activity.ServiceUrl, claimsIdentity, scope).ConfigureAwait(false);
                 context.TurnState.Add(connectorClient);
@@ -750,7 +750,7 @@ namespace Microsoft.Bot.Builder
                 throw new ArgumentNullException(nameof(credentials));
             }
 
-            var connectorClient = await CreateConnectorClient(serviceUrl, credentials).ConfigureAwait(false);
+            var connectorClient = await CreateConnectorClientAsync(serviceUrl, credentials).ConfigureAwait(false);
             var results = await connectorClient.Conversations.GetConversationsAsync(continuationToken, cancellationToken).ConfigureAwait(false);
             return results;
         }
@@ -1244,7 +1244,7 @@ namespace Microsoft.Bot.Builder
         /// </remarks>
         public virtual async Task CreateConversationAsync(string channelId, string serviceUrl, MicrosoftAppCredentials credentials, ConversationParameters conversationParameters, BotCallbackHandler callback, CancellationToken cancellationToken)
         {
-            var connectorClient = await CreateConnectorClient(serviceUrl, credentials).ConfigureAwait(false);
+            var connectorClient = await CreateConnectorClientAsync(serviceUrl, credentials).ConfigureAwait(false);
 
             var result = await connectorClient.Conversations.CreateConversationAsync(conversationParameters, cancellationToken).ConfigureAwait(false);
 
@@ -1336,7 +1336,7 @@ namespace Microsoft.Bot.Builder
             var appId = GetBotAppId(turnContext);
 
             var clientKey = $"{appId}:{oAuthAppCredentials?.MicrosoftAppId}";
-            var oAuthScope = await GetBotFrameworkOAuthScope().ConfigureAwait(false);
+            var oAuthScope = await GetBotFrameworkOAuthScopeAsync().ConfigureAwait(false);
 
             var appCredentials = oAuthAppCredentials ?? await GetAppCredentialsAsync(appId, oAuthScope).ConfigureAwait(false);
 
@@ -1473,7 +1473,7 @@ namespace Microsoft.Bot.Builder
                 return $"{CallerIdConstants.BotToBotPrefix}{JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims)}";
             }
 
-            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(ChannelProvider).ConfigureAwait(false);
+            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironmentAsync(ChannelProvider).ConfigureAwait(false);
 
             return cloudEnvironment.CallerId;
         }
@@ -1514,13 +1514,13 @@ namespace Microsoft.Bot.Builder
                     // The skill connector has the target skill in the OAuthScope.
                     scope = SkillValidation.IsSkillClaim(claimsIdentity.Claims) ?
                         JwtTokenValidation.GetAppIdFromClaims(claimsIdentity.Claims) :
-                        await GetBotFrameworkOAuthScope().ConfigureAwait(false);
+                        await GetBotFrameworkOAuthScopeAsync().ConfigureAwait(false);
                 }
 
                 appCredentials = await GetAppCredentialsAsync(botId, scope).ConfigureAwait(false);
             }
 
-            return await CreateConnectorClient(serviceUrl, appCredentials).ConfigureAwait(false);
+            return await CreateConnectorClientAsync(serviceUrl, appCredentials).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1529,12 +1529,12 @@ namespace Microsoft.Bot.Builder
         /// <param name="serviceUrl">The service URL.</param>
         /// <param name="appCredentials">The application credentials for the bot.</param>
         /// <returns>Connector client instance.</returns>
-        private async Task<IConnectorClient> CreateConnectorClient(string serviceUrl, AppCredentials appCredentials = null)
+        private async Task<IConnectorClient> CreateConnectorClientAsync(string serviceUrl, AppCredentials appCredentials = null)
         {
             // As multiple bots can listen on a single serviceUrl, the clientKey also includes the OAuthScope.
             var clientKey = $"{serviceUrl}{appCredentials?.MicrosoftAppId}:{appCredentials?.OAuthScope}";
 
-            var emptyCredentials = await CloudEnvironment.GetEmptyCredential(ChannelProvider).ConfigureAwait(false);
+            var emptyCredentials = await CloudEnvironment.GetEmptyCredentialAsync(ChannelProvider).ConfigureAwait(false);
 
             return _connectorClients.GetOrAdd(clientKey, (key) =>
             {
@@ -1596,9 +1596,9 @@ namespace Microsoft.Bot.Builder
         /// <summary>
         /// This method returns the correct Bot Framework OAuthScope for AppCredentials.
         /// </summary>
-        private async Task<string> GetBotFrameworkOAuthScope()
+        private async Task<string> GetBotFrameworkOAuthScopeAsync()
         {
-            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(ChannelProvider).ConfigureAwait(false);
+            var cloudEnvironment = await CloudEnvironment.GetCloudEnvironmentAsync(ChannelProvider).ConfigureAwait(false);
             return cloudEnvironment.ToChannelFromBotOAuthScope;
         }
 

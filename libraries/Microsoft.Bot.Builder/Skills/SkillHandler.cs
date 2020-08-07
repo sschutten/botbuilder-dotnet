@@ -168,7 +168,7 @@ namespace Microsoft.Bot.Builder.Skills
 #pragma warning disable 618
                 var conversationReference = await _conversationIdFactory.GetConversationReferenceAsync(conversationId, cancellationToken).ConfigureAwait(false);
 #pragma warning restore 618
-                var cloudEnvironment = await CloudEnvironment.GetCloudEnvironment(ChannelProvider).ConfigureAwait(false);
+                var cloudEnvironment = await CloudEnvironment.GetCloudEnvironmentAsync(ChannelProvider).ConfigureAwait(false);
                 skillConversationReference = new SkillConversationReference
                 {
                     ConversationReference = conversationReference,

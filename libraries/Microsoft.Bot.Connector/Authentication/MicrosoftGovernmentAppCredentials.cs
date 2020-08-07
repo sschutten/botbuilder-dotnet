@@ -11,8 +11,6 @@ namespace Microsoft.Bot.Connector.Authentication
     /// </summary>
     public class MicrosoftGovernmentAppCredentials : MicrosoftAppCredentials
     {
-        private readonly string _oauthEndpoint;
-
         /// <summary>
         /// An empty set of credentials.
         /// </summary>
@@ -27,6 +25,8 @@ namespace Microsoft.Bot.Connector.Authentication
         /// An empty set of credentials.
         /// </summary>
         public static readonly MicrosoftGovernmentAppCredentials UsSecEmpty = new MicrosoftGovernmentAppCredentials(null, null, null, null, CloudEnvironment.UsSecGovernment.ChannelService, UsSecGovernmentAuthenticationConstants.ToChannelFromBotOAuthScope);
+
+        private readonly string _oauthEndpoint;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MicrosoftGovernmentAppCredentials"/> class.

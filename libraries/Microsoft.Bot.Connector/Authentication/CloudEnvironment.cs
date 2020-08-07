@@ -16,7 +16,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// Public Azure Cloud.
         /// </summary>
-        public static CloudEnvironment PublicCloud = new CloudEnvironment(
+        public static readonly CloudEnvironment PublicCloud = new CloudEnvironment(
             string.Empty,
             false,
             AuthenticationConstants.ToChannelFromBotLoginUrl,
@@ -30,7 +30,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// US Governement Cloud.
         /// </summary>
-        public static CloudEnvironment UsGovernment = new CloudEnvironment(
+        public static readonly CloudEnvironment UsGovernment = new CloudEnvironment(
             GovernmentAuthenticationConstants.ChannelService,
             true,
             GovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
@@ -44,7 +44,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// US National Governement Cloud.
         /// </summary>
-        public static CloudEnvironment UsNatGovernment = new CloudEnvironment(
+        public static readonly CloudEnvironment UsNatGovernment = new CloudEnvironment(
             UsNatGovernmentAuthenticationConstants.ChannelService,
             true,
             UsNatGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
@@ -58,7 +58,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// US Secure Governement Cloud.
         /// </summary>
-        public static CloudEnvironment UsSecGovernment = new CloudEnvironment(
+        public static readonly CloudEnvironment UsSecGovernment = new CloudEnvironment(
             UsSecGovernmentAuthenticationConstants.ChannelService,
             true,
             UsSecGovernmentAuthenticationConstants.ToChannelFromBotLoginUrl,
@@ -92,48 +92,65 @@ namespace Microsoft.Bot.Connector.Authentication
         }
 
         /// <summary>
-        /// The channel service for the cloud.
+        /// Gets the channel service for the cloud.
         /// </summary>
+        /// <value>ChannelService.</value>
         public string ChannelService { get; private set; }
 
         /// <summary>
-        /// The where this cloud environment is a government cloud.
+        /// Gets a value indicating whether this cloud environment is a government cloud.
         /// </summary>
+        /// <value>IsGovernment.</value>
         public bool IsGovernment { get; private set; }
 
         /// <summary>
-        /// The channel service for the cloud.
+        /// Gets the channel service for the cloud.
         /// </summary>
+        /// <value>ToChannelFromBotLoginUrl.</value>
+#pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
         public string ToChannelFromBotLoginUrl { get; private set; }
+#pragma warning restore CA1056 // Uri properties should not be strings
 
         /// <summary>
-        /// OAuth scope to request.
+        /// Gets the OAuth scope to request.
         /// </summary>
+        /// <value>ToChannelFromBotOAuthScope.</value>
         public string ToChannelFromBotOAuthScope { get; private set; }
 
         /// <summary>
-        /// Token issuer.
+        /// Gets the Token issuer.
         /// </summary>
+        /// <value>ToBotFromChannelTokenIssuer.</value>
         public string ToBotFromChannelTokenIssuer { get; private set; }
 
         /// <summary>
-        /// OAuth Url used to get a token from OAuthApiClient.
+        /// Gets the OAuth Url used to get a token from OAuthApiClient.
         /// </summary>
+        /// <value>OAuthUrl.</value>
+#pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
         public string OAuthUrl { get; private set; }
+#pragma warning restore CA1056 // Uri properties should not be strings
 
         /// <summary>
-        /// OpenID metadata document for tokens coming from MSA.
+        /// Gets the OpenID metadata document for tokens coming from MSA.
         /// </summary>
+        /// <value>ToBotFromChannelOpenIdMetadataUrl.</value>
+#pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
         public string ToBotFromChannelOpenIdMetadataUrl { get; private set; }
+#pragma warning restore CA1056 // Uri properties should not be strings
 
         /// <summary>
-        ///  OpenID metadata document for tokens coming from MSA.
+        ///  Gets the OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public string ToBotFromEmulatorOpenIdMetadataUrl{ get; private set; }
+        /// <value>ToBotFromEmulatorOpenIdMetadataUrl.</value>
+#pragma warning disable CA1056 // Uri properties should not be strings (we can't change this without breaking binary compat)
+        public string ToBotFromEmulatorOpenIdMetadataUrl { get; private set; }
+#pragma warning restore CA1056 // Uri properties should not be strings
 
         /// <summary>
-        /// A caller ID constant for this cloud environment
+        /// Gets a caller ID constant for this cloud environment.
         /// </summary>
+        /// <value>CallerId.</value>
         public string CallerId { get; private set; }
 
         /// <summary>
@@ -141,7 +158,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         /// <param name="channelProvider">The channel provider.</param>
         /// <returns>The CloudEnvironment.</returns>
-        public static async Task<CloudEnvironment> GetCloudEnvironment(IChannelProvider channelProvider)
+        public static async Task<CloudEnvironment> GetCloudEnvironmentAsync(IChannelProvider channelProvider)
         {
             if (channelProvider == null)
             {
@@ -186,9 +203,9 @@ namespace Microsoft.Bot.Connector.Authentication
         /// </summary>
         /// <param name="channelProvider">The channel provider.</param>
         /// <returns>The empty credential.</returns>
-        public static async Task<MicrosoftAppCredentials> GetEmptyCredential(IChannelProvider channelProvider)
+        public static async Task<MicrosoftAppCredentials> GetEmptyCredentialAsync(IChannelProvider channelProvider)
         {
-            var cloudEnvironment = await GetCloudEnvironment(channelProvider).ConfigureAwait(false);
+            var cloudEnvironment = await GetCloudEnvironmentAsync(channelProvider).ConfigureAwait(false);
             return GetEmptyCredential(cloudEnvironment.ChannelService);
         }
 
