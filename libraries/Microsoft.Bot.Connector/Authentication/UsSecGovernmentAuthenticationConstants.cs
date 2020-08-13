@@ -16,7 +16,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// TO GOVERNMENT CHANNEL FROM BOT: Login URL.
         /// </summary>
-        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.microsoft.scloud/MicrosoftServices.onmicrosoft.scloud";
+        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.microsoft.scloud/MicrosoftServices.onms.microsoft.scloud";
 
         /// <summary>
         /// TO GOVERNMENT CHANNEL FROM BOT: OAuth scope to request.
@@ -31,7 +31,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// OAuth Url used to get a token from OAuthApiClient.
         /// </summary>
-        public const string OAuthUrlGov = "https://botframework.microsoft.scloud";
+        public const string OAuthUrlGov = "https://api.botframework.microsoft.scloud";
 
         /// <summary>
         /// TO BOT FROM GOVERNMANT CHANNEL: OpenID metadata document for tokens coming from MSA.
@@ -41,6 +41,6 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// TO BOT FROM GOVERNMENT EMULATOR: OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.microsoft.scloud/cab8a31a-1906-4287-a0d8-4eef66b95f6e/v2.0/.well-known/openid-configuration";
+        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.microsoft.scloud/MicrosoftServices.onms.microsoft.scloud/v2.0/.well-known/openid-configuration";
     }
 }

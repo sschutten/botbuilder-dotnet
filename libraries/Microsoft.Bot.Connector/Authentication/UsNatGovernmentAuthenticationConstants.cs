@@ -16,7 +16,7 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// TO GOVERNMENT CHANNEL FROM BOT: Login URL.
         /// </summary>
-        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.eaglex.ic.gov/MicrosoftServices.onmicrosoft.gov";
+        public const string ToChannelFromBotLoginUrl = "https://login.microsoftonline.eaglex.ic.gov/MicrosoftServices.onms.eaglex.ic.gov";
 
         /// <summary>
         /// TO GOVERNMENT CHANNEL FROM BOT: OAuth scope to request.
@@ -41,6 +41,6 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <summary>
         /// TO BOT FROM GOVERNMENT EMULATOR: OpenID metadata document for tokens coming from MSA.
         /// </summary>
-        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.eaglex.ic.gov/cab8a31a-1906-4287-a0d8-4eef66b95f6e/v2.0/.well-known/openid-configuration";
+        public const string ToBotFromEmulatorOpenIdMetadataUrl = "https://login.microsoftonline.eaglex.ic.gov//MicrosoftServices.onms.eaglex.ic.gov/v2.0/.well-known/openid-configuration";
     }
 }
