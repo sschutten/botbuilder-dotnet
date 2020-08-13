@@ -182,7 +182,7 @@ namespace Microsoft.Bot.Connector.Authentication
 
             var identity = await tokenExtractor.GetIdentityAsync(authHeader, channelId, authConfig.RequiredEndorsements).ConfigureAwait(false);
 
-            await ValidateIdentity(identity, credentials, serviceUrl).ConfigureAwait(false);
+            await ValidateIdentity(identity, credentials, serviceUrl, cloudEnvironment).ConfigureAwait(false);
 
             return identity;
         }
@@ -193,9 +193,10 @@ namespace Microsoft.Bot.Connector.Authentication
         /// <param name="identity">The claims identity to validate.</param>
         /// <param name="credentials">The user defined set of valid credentials, such as the AppId.</param>
         /// <param name="serviceUrl">The service url from the request.</param>
+        /// <param name="cloudEnvironment">The cloud environment.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
 #pragma warning disable UseAsyncSuffix // Use Async suffix (can't change this without breaking binary compat)
-        public static async Task ValidateIdentity(ClaimsIdentity identity, ICredentialProvider credentials, string serviceUrl)
+        public static async Task ValidateIdentity(ClaimsIdentity identity, ICredentialProvider credentials, string serviceUrl, CloudEnvironment cloudEnvironment)
 #pragma warning restore UseAsyncSuffix // Use Async suffix
         {
             if (identity == null)
@@ -217,7 +218,7 @@ namespace Microsoft.Bot.Connector.Authentication
 
             // Look for the "aud" claim, but only if issued from the Bot Framework
             Claim audienceClaim = identity.Claims.FirstOrDefault(
-                c => c.Issuer == GovernmentAuthenticationConstants.ToBotFromChannelTokenIssuer && c.Type == AuthenticationConstants.AudienceClaim);
+                c => c.Issuer == cloudEnvironment.ToBotFromChannelTokenIssuer && c.Type == AuthenticationConstants.AudienceClaim);
 
             if (audienceClaim == null)
             {
