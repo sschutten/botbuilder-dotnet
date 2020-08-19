@@ -55,7 +55,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         public static ImportResolverDelegate ResourceExplorerResolver(string locale, Dictionary<string, IList<Resource>> resourceMapping)
         {
-            return (string source, string id) =>
+            return (LGResource lgResource, string id) =>
             {
                 var fallbackLocale = LGResourceLoader.FallbackLocale(locale, resourceMapping.Keys.ToList());
                 var resources = resourceMapping[fallbackLocale];
@@ -70,7 +70,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
                 else
                 {
                     var content = resource.ReadTextAsync().GetAwaiter().GetResult();
-                    return (content, resource.Id);
+                    return new LGResource(resource.Id, resource.FullName, content);
                 }
             };
         }

@@ -20,10 +20,10 @@ namespace Microsoft.Bot.Builder.Dialogs.Declarative.Resources
         public string Id { get; protected set; }
 
         /// <summary>
-        /// Gets or sets full name.
+        /// Gets or sets the resource path.
         /// </summary>
         /// <value>
-        /// Resource full name.
+        /// The full path to the resource on disk.
         /// </value>
         public string FullName { get; protected set; }
 

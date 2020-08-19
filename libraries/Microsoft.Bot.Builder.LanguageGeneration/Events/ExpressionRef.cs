@@ -10,6 +10,11 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
     /// </summary>
     public class ExpressionRef
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionRef"/> class.
+        /// </summary>
+        /// <param name="expression">Expression string.</param>
+        /// <param name="sourceRange">Expression source range.</param>
         public ExpressionRef(string expression, SourceRange sourceRange)
         {
             this.Expression = expression;
@@ -32,6 +37,10 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
         /// </value>
         public SourceRange SourceRange { get; set; }
 
+        /// <summary>
+        /// Return the Expression string.
+        /// </summary>
+        /// <returns>To string method.</returns>
         public override string ToString()
         {
             return Expression;
