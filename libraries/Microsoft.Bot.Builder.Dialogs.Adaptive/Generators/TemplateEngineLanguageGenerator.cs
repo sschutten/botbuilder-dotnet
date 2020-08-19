@@ -67,7 +67,6 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TemplateEngineLanguageGenerator"/> class.
-        /// This function would be deprecated. Please use <see cref="Resource"/> as the first parameter instead.
         /// </summary>
         /// <param name="filePath">lg template file absolute path.</param>
         /// <param name="resourceMapping">template resource loader delegate (locale) -> <see cref="ImportResolverDelegate"/>.</param>

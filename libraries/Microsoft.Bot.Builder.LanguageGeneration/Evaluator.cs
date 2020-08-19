@@ -487,8 +487,11 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
             }
 
             var parse = this.ExpressionParser.Parse(exp);
-            var opt = new Options();
-            opt.NullSubstitution = _lgOptions.NullSubstitution;
+            var opt = new Options
+            {
+                Locale = _lgOptions.Locale,
+                NullSubstitution = _lgOptions.NullSubstitution
+            };
             var result = parse.TryEvaluate(scope, opt);
 
             if (currentTemplate != null && _lgOptions.OnEvent != null)
