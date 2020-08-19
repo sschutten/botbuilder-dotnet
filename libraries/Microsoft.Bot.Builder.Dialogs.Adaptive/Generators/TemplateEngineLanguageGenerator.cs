@@ -150,7 +150,7 @@ namespace Microsoft.Bot.Builder.Dialogs.Adaptive.Generators
         {
             foreach (var template in templates.AllTemplates)
             {
-                RegisterSourcemap(template, template.SourceRange, resource.FullName);
+                RegisterSourcemap(template, template.SourceRange, template.SourceRange.Source);
                 foreach (var expressionRef in template.Expressions)
                 {
                     RegisterSourcemap(expressionRef, expressionRef.SourceRange, resource.FullName);
