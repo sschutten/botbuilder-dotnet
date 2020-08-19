@@ -656,7 +656,7 @@ namespace Microsoft.Bot.Builder.LanguageGeneration
                 }
                 else
                 {
-                    throw new Exception("namespace is required or the resource should be an absoulte path!");
+                    throw new Exception("namespace is required or the id should be an absoulte path!");
                 }
             }
 
